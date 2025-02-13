@@ -124,9 +124,9 @@ class Rikishi(BaseModel):
     heya: str | None = None
     birthDate: datetime | None = None
     shusshin: str | None = None
-    measurementHistory: list[Measurement] = []
-    rankHistory: list[Rank] = []
-    shikonaHistory: list[Shikona] = []
+    measurementHistory: list[Measurement] | None = []
+    rankHistory: list[Rank] | None = []
+    shikonaHistory: list[Shikona] | None = []
     height: float
     weight: float
     debut: str
@@ -148,8 +148,8 @@ class BashoData(BaseModel):
     date: str
     startDate: datetime
     endDate: datetime
-    yusho: list[BashoRikishi] = []
-    specialPrizes: list[SpecialPrize] = []
+    yusho: list[BashoRikishi] | None = []
+    specialPrizes: list[SpecialPrize] | None = []
 
 
 class BashoBanzukeRikishi(BaseModel):
@@ -161,49 +161,50 @@ class BashoBanzukeRikishi(BaseModel):
     wins: int
     losses: int
     absences: int
-    record: list[BashoBanzukeRikishiRecord] = []
+    record: list[BashoBanzukeRikishiRecord] | None = []
 
 
 class BashoBanzuke(BaseModel):
     bashoId: str
     division: str
-    east: list[BashoBanzukeRikishi] = []
-    west: list[BashoBanzukeRikishi] = []
+    east: list[BashoBanzukeRikishi] | None = []
+    west: list[BashoBanzukeRikishi] | None = []
 
 
 class KimariteResponse(BaseModel):
     limit: int
     skip: int
+    total: int
     sortField: str
     sortOrder: str
-    records: list[Kimarite] = []
+    records: list[Kimarite] | None = []
 
 
 class BashoTorikumi(BaseModel):
     date: str
     startDate: str
     endDate: str
-    yusho: list[TorikumiYusho] = []
-    specialPrizes: list[SpecialPrize] = []
-    torikumi: list[Match] = []
+    yusho: list[TorikumiYusho] | None = []
+    specialPrizes: list[SpecialPrize] | None = []
+    torikumi: list[Match] | None = []
 
 
 class KimariteMatchesResponse(BaseModel):
     limit: int
     skip: int
     total: int
-    records: list[Match] = []
+    records: list[Match] | None = []
 
 
 class RikishiResponse(BaseModel):
     limit: int
     skip: int
     total: int
-    records: list[Rikishi] = []
+    records: list[Rikishi] | None = []
 
 
 class RikishiMatchesResponse(BaseModel):
     limit: int
     skip: int
     total: int
-    records: list[RikishiMatch] = []
+    records: list[RikishiMatch] | None = []
