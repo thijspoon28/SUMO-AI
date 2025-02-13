@@ -1,93 +1,385 @@
 from pydantic import BaseModel
 import requests
 
-from api.schemas import BashoBanzuke, BashoData, BashoTorikumi, KimariteMatches, Kimarites, Rikishi, RikishiMatches, RikishiStats, RikishiVersus, Rikishis
+from api.enums import Division, SortFields
+from api.schemas import (
+    BashoBanzuke,
+    BashoData,
+    BashoTorikumi,
+    KimariteMatches,
+    Kimarites,
+    Measurement,
+    Rank,
+    Rikishi,
+    RikishiMatches,
+    RikishiStats,
+    RikishiVersus,
+    Rikishis,
+    Shikona,
+)
 
 
 class SumoAPI:
     BASE_URL = "https://www.sumo-api.com"
 
-    def request(cls, url: str, schema: BaseModel) -> BaseModel:
-        response = requests.get(url)
+    def request(
+        cls, url: str, *, params: dict | None = None, schema: BaseModel | None = None
+    ) -> BaseModel | dict:
+        response = requests.get(url, params=params)
 
         try:
             data = response.json()
         except Exception as exc:
             raise Exception("API IS PROBABLY DOWN") from exc
-        
-        # print(data["records"][0])
-        result = schema(**data)
 
-        return result
-    
-    def get_rikishis(cls) -> Rikishis:
+        if schema:
+            result = schema(**data)
+
+            return result
+
+        else:
+            return data
+
+    def get_rikishis(
+        cls,
+        shikonaEn: str | None = None,
+        heya: str | None = None,
+        sumodbId: int | None = None,
+        nskId: int | None = None,
+        intai: bool | None = None,
+        measurements: bool | None = None,
+        ranks: bool | None = None,
+        shikonas: bool | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+    ) -> Rikishis:
+        """Returns a subset of rikishi in the database, hard limit of 1000, use limit & skip to access all records
+
+        Args:
+            shikonaEn (str, optional): search for a rikishi by English shikona. Defaults to None.
+            heya (str, optional): search by heya, full name in English, e.g. Isegahama. Defaults to None.
+            sumodbId (int, optional): search by sumoDB ID, e.g. 11927 = Terunofuji. Defaults to None.
+            nskId (int, optional): search by official NSK ID, e.g. 3321 = Terunofuji. Defaults to None.
+            intai (bool, optional): (retirement date) if missing, only active rikishi are searched. If true, retired rikishi are also searched. Defaults to None.
+            measurements (bool, optional): if true, the changes in a rikishi's measurements over time will be included in the response. Defaults to None.
+            ranks (bool, optional): if true, the changes in a rikishi's ranks over time will be included in the response. Defaults to None.
+            shikonas (bool, optional): if true, the changes in a rikishi's shikonas over time will be included in the response. Defaults to None.
+            limit (int, optional): how many results to return, 1000 hard limit. Defaults to None.
+            skip (int, optional): skip over the number of results specified. Defaults to None.
+
+        Returns:
+            Rikishis: _description_
+        """
+
         url = f"{cls.BASE_URL}/api/rikishis"
+        params = {}
 
-        return cls.request(url, Rikishis)
-    
-    def get_rikishi(cls, rikishi_id) -> Rikishi:
+        if shikonaEn:
+            params["shikonaEn"] = shikonaEn
+        if heya:
+            params["heya"] = heya
+        if sumodbId:
+            params["sumodbId"] = sumodbId
+        if nskId:
+            params["nskId"] = nskId
+        if intai is not None:
+            params["intai"] = str(intai).lower()
+        if measurements is not None:
+            params["measurements"] = str(measurements).lower()
+        if ranks is not None:
+            params["ranks"] = str(ranks).lower()
+        if shikonas is not None:
+            params["shikonas"] = str(shikonas).lower()
+        if limit:
+            params["limit"] = min(limit, 1000)
+        if skip:
+            params["skip"] = skip
+
+        return cls.request(url, params=params, schema=Rikishis)
+
+    def get_rikishi(
+        cls,
+        rikishi_id: int,
+        measurements: bool = None,
+        ranks: bool = None,
+        shikonas: bool = None,
+    ) -> Rikishi:
+        """Returns a single rikishi by id
+
+        Args:
+            rikishi_id (int): the rikishi id
+            measurements (bool, optional): if true, the changes in a rikishi's measurements over time will be included in the response. Defaults to None.
+            ranks (bool, optional): if true, the changes in a rikishi's ranks over time will be included in the response. Defaults to None.
+            shikonas (bool, optional): if true, the changes in a rikishi's shikonas over time will be included in the response. Defaults to None.
+
+        Returns:
+            Rikishi: _description_
+        """
         url = f"{cls.BASE_URL}/api/rikishi/{rikishi_id}"
+        params = {}
 
-        return cls.request(url, Rikishi)
-    
-    def get_rikishi_stats(cls, rikishi_id) -> RikishiStats:
+        if measurements is not None:
+            params["measurements"] = str(measurements).lower()
+        if ranks is not None:
+            params["ranks"] = str(ranks).lower()
+        if shikonas is not None:
+            params["shikonas"] = str(shikonas).lower()
+
+        return cls.request(url, params=params, schema=Rikishi)
+
+    def get_rikishi_stats(cls, rikishi_id: int) -> RikishiStats:
+        """Returns a single rikishi's overall performance stats, more data to be added later.
+
+        Args:
+            rikishi_id (int): the rikishi id
+
+        Returns:
+            RikishiStats: _description_
+        """
         url = f"{cls.BASE_URL}/api/rikishi/{rikishi_id}/stats"
 
-        return cls.request(url, RikishiStats)
-    
-    def get_rikishi_matches(cls, rikishi_id) -> RikishiMatches:
+        return cls.request(url, schema=RikishiStats)
+
+    def get_rikishi_matches(
+        cls, rikishi_id: int, basho_id: str | None = None
+    ) -> RikishiMatches:
+        """Returns all matches of a rikishi. Sorted by basho, then by day, most to least recent.
+
+        Args:
+            bashoId (str): filters the matches by a specific basho YYYYMM e.g. 202303
+
+        Returns:
+            RikishiStats: _description_
+        """
         url = f"{cls.BASE_URL}/api/rikishi/{rikishi_id}/matches"
-        
-        return cls.request(url, RikishiMatches)
-    
-    def get_rikishi_versus(cls, rikishi_id, opponent_id) -> RikishiVersus:
+        params = {}
+
+        if basho_id is not None:
+            params["bashoId"] = basho_id
+
+        return cls.request(url, params=params, schema=RikishiMatches)
+
+    def get_rikishi_versus(
+        cls, rikishi_id: int, opponent_id: int, basho_id: str | None = None
+    ) -> RikishiVersus:
+        """Returns all matches between two rikishi. Sorted by basho, then by day, most to least recent.
+
+        Args:
+            rikishi_id (int): the rikishi id
+            opponent_id (int): the opponent id
+            basho_id (str): filters the matches by a specific basho YYYYMM e.g. 202303
+
+        Returns:
+            RikishiVersus: _description_
+        """
         url = f"{cls.BASE_URL}/api/rikishi/{rikishi_id}/matches/{opponent_id}"
-        
-        return cls.request(url, RikishiVersus)
-    
-    def get_basho(cls, basho_id) -> BashoData:
+        params = {}
+
+        if basho_id is not None:
+            params["bashoId"] = basho_id
+
+        return cls.request(url, params=params, schema=RikishiVersus)
+
+    def get_basho(cls, basho_id: str) -> BashoData:
+        """Returns a single basho, where bashoId is in the format YYYYMM, with the yusho and sansho details for the basho.
+
+        Args:
+            basho_id (str): the basho id, is in the format YYYYMM
+
+        Returns:
+            BashoData: _description_
+        """
         url = f"{cls.BASE_URL}/api/basho/{basho_id}"
-        
-        return cls.request(url, BashoData)
-    
-    def get_basho_banzuke(cls, basho_id, division) -> BashoBanzuke:
+
+        return cls.request(url, schema=BashoData)
+
+    def get_basho_banzuke(cls, basho_id: str, division: Division) -> BashoBanzuke:
+        """Returns a single basho, where bashoId is in the format YYYYMM, and the specified division's banzuke,
+        where the division is any of Makuuchi, Juryo, Makushita, Sandanme, Jonidan or Jonokuchi.
+
+        Args:
+            basho_id (str): the basho id, is in the format YYYYMM
+            division (Division): the division [Makuuchi, Juryo, Makushita, Sandanme, Jonidan or Jonokuchi]
+
+        Returns:
+            BashoBanzuke: _description_
         """
-        Division : Makuuchi, Juryo, Makushita, Sandanme, Jonidan, or Jonokuchi
+        url = f"{cls.BASE_URL}/api/basho/{basho_id}/banzuke/{division.value}"
+
+        return cls.request(url, schema=BashoBanzuke)
+
+    def get_basho_torikumi(
+        cls, basho_id: str, division: Division, day: int
+    ) -> BashoTorikumi:
+        """Returns a single basho, where bashoId is in the format YYYYMM, and the specified division's torikumi
+        of a given day.
+
+        Args:
+            basho_id (str): the basho id, is in the format YYYYMM
+            division (Division): the division [Makuuchi, Juryo, Makushita, Sandanme, Jonidan or Jonokuchi]
+            day (int): 1 to 15 (or up to the number of playoff matches)
+
+        Returns:
+            BashoTorikumi: _description_
         """
-        url = f"{cls.BASE_URL}/api/basho/{basho_id}/banzuke/{division}"
-        
-        return cls.request(url, BashoBanzuke)
-    
-    def get_basho_torikumi(cls, basho_id, division, day) -> BashoTorikumi:
-        url = f"{cls.BASE_URL}/api/basho/{basho_id}/torikumi/{division}/{day}"
-        
-        return cls.request(url, BashoTorikumi)
-    
-    def get_kimarite(cls, sortField: str = "count") -> Kimarites:
+        url = f"{cls.BASE_URL}/api/basho/{basho_id}/torikumi/{division.value}/{day}"
+
+        return cls.request(url, schema=BashoTorikumi)
+
         """
         sortField : count, kimarite, lastUsage
         """
 
+    def get_kimarite(
+        cls,
+        sortField: SortFields = SortFields.count,
+        ascending: bool = True,
+        limit: int | None = None,
+        skip: int | None = None,
+    ) -> Kimarites:
+        """Returns statistics on the usage of kimarite including the count of usage and the last basho and day used.
+        NOTE: the lastUsage is not gauranteed to be the actual last use on the specified day of the basho
+
+        Args:
+            sortField (str, optional): choose a field to sort by. Defaults to "count".
+            ascending (bool, optional): asc | desc. Defaults to True.
+            limit (int, optional): how many results to return, 1000 hard limit. Defaults to None.
+            skip (int, optional): skip over the number of results specified. Defaults to None.
+
+        Returns:
+            Kimarites: _description_
+        """
+
         url = f"{cls.BASE_URL}/api/kimarite?sortField={sortField}"
-        
-        return cls.request(url, Kimarites)
-    
-    def get_kimarite_detail(cls, kimarite) -> KimariteMatches:
+        params = {}
+
+        params["sortField"] = sortField
+        params["sortOrder"] = "asc" if ascending else "desc"
+
+        if limit:
+            params["limit"] = min(limit, 1000)
+        if skip:
+            params["skip"] = skip
+
+        return cls.request(url, params=params, schema=Kimarites)
+
+    def get_kimarite_detail(
+        cls,
+        kimarite: str,
+        ascending: bool = True,
+        limit: int | None = None,
+        skip: int | None = None,
+    ) -> KimariteMatches:
+        """Returns matches where the specified kimarite was used
+        NOTE: the sort order is by basho then day and is not guaranteed to be the actual use order on that day.
+
+        Args:
+            kimarite (str): the kimarite
+            ascending (bool, optional): asc | desc. Defaults to True.
+            limit (int, optional): how many results to return, 1000 hard limit. Defaults to None.
+            skip (int, optional): skip over the number of results specified. Defaults to None.
+
+        Returns:
+            KimariteMatches: _description_
+        """
         url = f"{cls.BASE_URL}/api/kimarite/{kimarite}"
-        
-        return cls.request(url, KimariteMatches)
-    
-    # def get_measurements(cls):
-    #     url = f"{cls.BASE_URL}/api/measurements"
-        
-    #     return cls.request(url, Measurements)
-    
-    # def get_ranks(cls):
-    #     url = f"{cls.BASE_URL}/api/ranks"
-        
-    #     return cls.request(url, Ranks)
-    
-    # def get_shikonas(cls):
-    #     url = f"{cls.BASE_URL}/api/shikonas"
-        
-    #     return cls.request(url, Shikonas)
+        params = {}
+
+        params["sortOrder"] = "asc" if ascending else "desc"
+
+        if limit:
+            params["limit"] = min(limit, 1000)
+        if skip:
+            params["skip"] = skip
+
+        return cls.request(url, schema=KimariteMatches)
+
+    def get_measurements(
+        cls,
+        rikishi_id: int | None = None,
+        basho_id: str | None = None,
+        ascending: bool = True,
+    ) -> list[Measurement]:
+        """Returns measurement changes by rikishi or basho
+        NOTE: the sort order is by basho, default descending order.
+
+        Args:
+            rikishi_id (int, optional): filter on rikishi by ID. Defaults to None.
+            basho_id (str, optional): filter on basho in format (format yyyymm, e.g 202301). Defaults to None.
+            ascending (bool, optional): asc | desc. Defaults to True.
+
+        Returns:
+            list[Measurement]: _description_
+        """
+        url = f"{cls.BASE_URL}/api/measurements"
+        params = {}
+
+        params["sortOrder"] = "asc" if ascending else "desc"
+
+        if rikishi_id:
+            params["rikishiId"] = rikishi_id
+        if basho_id:
+            params["bashoId"] = basho_id
+
+        data = cls.request(url, params=params)
+        return [Measurement(**d) for d in data]
+
+    def get_ranks(
+        cls,
+        rikishi_id: int | None = None,
+        basho_id: str | None = None,
+        ascending: bool = True,
+    ) -> list[Rank]:
+        """Returns rank changes by rikishi or basho
+        NOTE: the sort order is by basho, default descending order.
+
+        Args:
+            rikishi_id (int, optional): filter on rikishi by ID. Defaults to None.
+            basho_id (str, optional): filter on basho in format (format yyyymm, e.g 202301). Defaults to None.
+            ascending (bool, optional): asc | desc. Defaults to True.
+
+        Returns:
+            list[Rank]: _description_
+        """
+        url = f"{cls.BASE_URL}/api/ranks"
+        params = {}
+
+        params["sortOrder"] = "asc" if ascending else "desc"
+
+        if rikishi_id:
+            params["rikishiId"] = rikishi_id
+        if basho_id:
+            params["bashoId"] = basho_id
+
+        data = cls.request(url, params=params)
+        return [Rank(**d) for d in data]
+
+    def get_shikonas(
+        cls,
+        rikishi_id: int | None = None,
+        basho_id: str | None = None,
+        ascending: bool = True,
+    ) -> list[Shikona]:
+        """Returns shikona changes by rikishi or basho
+        NOTE: the sort order is by basho, default descending order.
+
+        Args:
+            rikishi_id (int, optional): filter on rikishi by ID. Defaults to None.
+            basho_id (str, optional): filter on basho in format (format yyyymm, e.g 202301). Defaults to None.
+            ascending (bool, optional): asc | desc. Defaults to True.
+
+        Returns:
+            list[Shikona]: _description_
+        """
+        url = f"{cls.BASE_URL}/api/shikonas"
+        params = {}
+
+        params["sortOrder"] = "asc" if ascending else "desc"
+
+        if rikishi_id:
+            params["rikishiId"] = rikishi_id
+        if basho_id:
+            params["bashoId"] = basho_id
+
+        data = cls.request(url, params=params)
+        return [Shikona(**d) for d in data]

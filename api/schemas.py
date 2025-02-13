@@ -2,6 +2,33 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+# https://www.sumo-api.com/api/measurements?rikishiId=216
+class Measurement(BaseModel):
+    id: str
+    bashoId: str
+    rikishiId: int
+    height: float
+    weight: float
+
+
+# https://www.sumo-api.com/api/ranks?bashoId=202303
+class Rank(BaseModel):
+    id: str
+    bashoId: str
+    rikishiId: int
+    rankValue: int
+    rank: str
+
+
+# https://www.sumo-api.com/api/shikonas?bashoId=202303
+class Shikona(BaseModel):
+    id: str
+    bashoId: str
+    rikishiId: int
+    shikonaEn: str
+    shikonaJp: str
+
+
 class Rikishi(BaseModel):
     id: int
     sumodbId: int | None = None
@@ -12,11 +39,27 @@ class Rikishi(BaseModel):
     heya: str | None = None
     birthDate: datetime | None = None
     shusshin: str | None = None
+    measurementHistory: list[Measurement] = []
+    rankHistory: list[Rank] = []
+    shikonaHistory: list[Shikona] = []
     height: float
     weight: float
     debut: str
+    intai: datetime | None = None
     updatedAt: datetime | None = None
     createdAt: datetime | None = None
+
+#     id	7522
+# sumodbId	10438
+# nskId	0
+# shikonaEn	"Hakushuzan"
+# shikonaJp	"柏秀山"
+# heya	"-"
+# birthDate	"0001-01-01T00:00:00Z"
+# shusshin	"-"
+# debut	"195401"
+# intai	"1959-05-01T00:00:00Z"
+# updatedAt	"2024-07-26T01:52:44.911Z"
 
 
 class Rikishis(BaseModel):
@@ -161,46 +204,3 @@ class KimariteMatches(BaseModel):
     skip: int
     total: int
     records: list[Match]
-
-
-# # https://www.sumo-api.com/api/measurements?rikishiId=216
-# class Measurement(BaseModel):
-#     id: str
-#     bashoId: str
-#     rikishiId: int
-#     height: float
-#     weight: float
-
-
-# # IDK IF THIS WORKS
-# class Measurements(BaseModel):
-#     __root__: list[Measurement]
-
-
-# # https://www.sumo-api.com/api/ranks?bashoId=202303
-# class Rank(BaseModel):
-#     id: str
-#     bashoId: str
-#     rikishiId: int
-#     rankValue: int
-#     rank: str
-
-
-# # IDK IF THIS WORKS
-# class Ranks(BaseModel):
-#     __root__: list[Measurement]
-
-
-# # https://www.sumo-api.com/api/shikonas?bashoId=202303
-# class Shikona(BaseModel):
-#     id: str
-#     bashoId: str
-#     rikishiId: int
-#     shikonaEn: str
-#     shikonaJp: str
-
-
-# # IDK IF THIS WORKS
-# class Shikonas(BaseModel):
-#     __root__: list[Shikona]
-
