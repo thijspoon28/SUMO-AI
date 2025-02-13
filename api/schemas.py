@@ -66,7 +66,7 @@ class Rikishis(BaseModel):
     limit: int
     skip: int
     total: int
-    records: list[Rikishi]
+    records: list[Rikishi] = []
 
 
 class RikishiStats(BaseModel):
@@ -103,17 +103,36 @@ class Match(BaseModel):
     winnerJp: str
 
 
+# Yes, this is the same as Match above, just missing the Id
+class RikishiMatch(BaseModel):
+    # id: str
+    bashoId: str
+    division: str
+    day: int
+    matchNo: int
+    eastId: int
+    eastShikona: str
+    eastRank: str
+    westId: int
+    westShikona: str
+    westRank: str
+    kimarite: str
+    winnerId: int
+    winnerEn: str
+    winnerJp: str
+
+
 class RikishiMatches(BaseModel):
     limit: int
     skip: int
     total: int
-    records: list[Match]
+    records: list[RikishiMatch] = []
 
 
 class RikishiVersus(BaseModel):
     kimariteLosses: dict[str, int]
     kimariteWins: dict[str, int]
-    matches: list[Match]
+    matches: list[RikishiMatch]
     opponentWins: int
     rikishiWins: int
     total: int
@@ -196,11 +215,11 @@ class Kimarites(BaseModel):
     skip: int
     sortField: str
     sortOrder: str
-    records: list[Kimarite]
+    records: list[Kimarite] = []
 
 
 class KimariteMatches(BaseModel):
     limit: int
     skip: int
     total: int
-    records: list[Match]
+    records: list[Match] = []

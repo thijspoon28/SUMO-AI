@@ -9,7 +9,7 @@ from api.schemas import (
     KimariteMatches,
     Kimarites,
     Measurement,
-    Rank,
+    Rank, 
     Rikishi,
     RikishiMatches,
     RikishiStats,
@@ -23,14 +23,18 @@ class SumoAPI:
     BASE_URL = "https://www.sumo-api.com"
 
     def request(
-        cls, url: str, *, params: dict | None = None, schema: BaseModel | None = None
+        cls,
+        url: str,
+        *,
+        params: dict | None = None,
+        schema: BaseModel | None = None,
     ) -> BaseModel | dict:
         response = requests.get(url, params=params)
 
         try:
             data = response.json()
         except Exception as exc:
-            raise Exception("API IS PROBABLY DOWN") from exc
+            raise Exception("API SOILED ITSELF (it's probably down)") from exc
 
         if schema:
             result = schema(**data)
@@ -68,7 +72,7 @@ class SumoAPI:
             skip (int, optional): skip over the number of results specified. Defaults to None.
 
         Returns:
-            Rikishis: _description_
+            Rikishis:
         """
 
         url = f"{cls.BASE_URL}/api/rikishis"
@@ -113,7 +117,7 @@ class SumoAPI:
             shikonas (bool, optional): if true, the changes in a rikishi's shikonas over time will be included in the response. Defaults to None.
 
         Returns:
-            Rikishi: _description_
+            Rikishi:
         """
         url = f"{cls.BASE_URL}/api/rikishi/{rikishi_id}"
         params = {}
@@ -134,14 +138,16 @@ class SumoAPI:
             rikishi_id (int): the rikishi id
 
         Returns:
-            RikishiStats: _description_
+            RikishiStats:
         """
         url = f"{cls.BASE_URL}/api/rikishi/{rikishi_id}/stats"
 
         return cls.request(url, schema=RikishiStats)
 
     def get_rikishi_matches(
-        cls, rikishi_id: int, basho_id: str | None = None
+        cls,
+        rikishi_id: int,
+        basho_id: str | None = None,
     ) -> RikishiMatches:
         """Returns all matches of a rikishi. Sorted by basho, then by day, most to least recent.
 
@@ -149,7 +155,7 @@ class SumoAPI:
             bashoId (str): filters the matches by a specific basho YYYYMM e.g. 202303
 
         Returns:
-            RikishiStats: _description_
+            RikishiStats:
         """
         url = f"{cls.BASE_URL}/api/rikishi/{rikishi_id}/matches"
         params = {}
@@ -160,7 +166,10 @@ class SumoAPI:
         return cls.request(url, params=params, schema=RikishiMatches)
 
     def get_rikishi_versus(
-        cls, rikishi_id: int, opponent_id: int, basho_id: str | None = None
+        cls,
+        rikishi_id: int,
+        opponent_id: int,
+        basho_id: str | None = None,
     ) -> RikishiVersus:
         """Returns all matches between two rikishi. Sorted by basho, then by day, most to least recent.
 
@@ -170,7 +179,7 @@ class SumoAPI:
             basho_id (str): filters the matches by a specific basho YYYYMM e.g. 202303
 
         Returns:
-            RikishiVersus: _description_
+            RikishiVersus:
         """
         url = f"{cls.BASE_URL}/api/rikishi/{rikishi_id}/matches/{opponent_id}"
         params = {}
@@ -180,20 +189,27 @@ class SumoAPI:
 
         return cls.request(url, params=params, schema=RikishiVersus)
 
-    def get_basho(cls, basho_id: str) -> BashoData:
+    def get_basho(
+        cls,
+        basho_id: str,
+    ) -> BashoData:
         """Returns a single basho, where bashoId is in the format YYYYMM, with the yusho and sansho details for the basho.
 
         Args:
             basho_id (str): the basho id, is in the format YYYYMM
 
         Returns:
-            BashoData: _description_
+            BashoData:
         """
         url = f"{cls.BASE_URL}/api/basho/{basho_id}"
 
         return cls.request(url, schema=BashoData)
 
-    def get_basho_banzuke(cls, basho_id: str, division: Division) -> BashoBanzuke:
+    def get_basho_banzuke(
+        cls,
+        basho_id: str,
+        division: Division | str,
+    ) -> BashoBanzuke:
         """Returns a single basho, where bashoId is in the format YYYYMM, and the specified division's banzuke,
         where the division is any of Makuuchi, Juryo, Makushita, Sandanme, Jonidan or Jonokuchi.
 
@@ -202,14 +218,19 @@ class SumoAPI:
             division (Division): the division [Makuuchi, Juryo, Makushita, Sandanme, Jonidan or Jonokuchi]
 
         Returns:
-            BashoBanzuke: _description_
+            BashoBanzuke:
         """
-        url = f"{cls.BASE_URL}/api/basho/{basho_id}/banzuke/{division.value}"
+        division_value = division if isinstance(division, str) else division.value
+
+        url = f"{cls.BASE_URL}/api/basho/{basho_id}/banzuke/{division_value}"
 
         return cls.request(url, schema=BashoBanzuke)
 
     def get_basho_torikumi(
-        cls, basho_id: str, division: Division, day: int
+        cls,
+        basho_id: str,
+        division: Division | str,
+        day: int,
     ) -> BashoTorikumi:
         """Returns a single basho, where bashoId is in the format YYYYMM, and the specified division's torikumi
         of a given day.
@@ -220,15 +241,13 @@ class SumoAPI:
             day (int): 1 to 15 (or up to the number of playoff matches)
 
         Returns:
-            BashoTorikumi: _description_
+            BashoTorikumi:
         """
-        url = f"{cls.BASE_URL}/api/basho/{basho_id}/torikumi/{division.value}/{day}"
+        division_value = division if isinstance(division, str) else division.value
+
+        url = f"{cls.BASE_URL}/api/basho/{basho_id}/torikumi/{division_value}/{day}"
 
         return cls.request(url, schema=BashoTorikumi)
-
-        """
-        sortField : count, kimarite, lastUsage
-        """
 
     def get_kimarite(
         cls,
@@ -247,7 +266,7 @@ class SumoAPI:
             skip (int, optional): skip over the number of results specified. Defaults to None.
 
         Returns:
-            Kimarites: _description_
+            Kimarites:
         """
 
         url = f"{cls.BASE_URL}/api/kimarite?sortField={sortField}"
@@ -280,7 +299,7 @@ class SumoAPI:
             skip (int, optional): skip over the number of results specified. Defaults to None.
 
         Returns:
-            KimariteMatches: _description_
+            KimariteMatches:
         """
         url = f"{cls.BASE_URL}/api/kimarite/{kimarite}"
         params = {}
@@ -309,7 +328,7 @@ class SumoAPI:
             ascending (bool, optional): asc | desc. Defaults to True.
 
         Returns:
-            list[Measurement]: _description_
+            list[Measurement]:
         """
         url = f"{cls.BASE_URL}/api/measurements"
         params = {}
@@ -328,7 +347,7 @@ class SumoAPI:
         cls,
         rikishi_id: int | None = None,
         basho_id: str | None = None,
-        ascending: bool = True,
+        # ascending: bool = True,
     ) -> list[Rank]:
         """Returns rank changes by rikishi or basho
         NOTE: the sort order is by basho, default descending order.
@@ -339,17 +358,20 @@ class SumoAPI:
             ascending (bool, optional): asc | desc. Defaults to True.
 
         Returns:
-            list[Rank]: _description_
+            list[Rank]:
         """
         url = f"{cls.BASE_URL}/api/ranks"
         params = {}
 
-        params["sortOrder"] = "asc" if ascending else "desc"
+        # params["sortOrder"] = "asc" if ascending else "desc"
 
         if rikishi_id:
             params["rikishiId"] = rikishi_id
         if basho_id:
             params["bashoId"] = basho_id
+
+        if not rikishi_id and not basho_id:
+            raise ValueError("Provide 'rikishi_id', 'basho_id' or both")
 
         data = cls.request(url, params=params)
         return [Rank(**d) for d in data]
@@ -358,7 +380,7 @@ class SumoAPI:
         cls,
         rikishi_id: int | None = None,
         basho_id: str | None = None,
-        ascending: bool = True,
+        # ascending: bool = True,
     ) -> list[Shikona]:
         """Returns shikona changes by rikishi or basho
         NOTE: the sort order is by basho, default descending order.
@@ -369,12 +391,12 @@ class SumoAPI:
             ascending (bool, optional): asc | desc. Defaults to True.
 
         Returns:
-            list[Shikona]: _description_
+            list[Shikona]:
         """
         url = f"{cls.BASE_URL}/api/shikonas"
         params = {}
 
-        params["sortOrder"] = "asc" if ascending else "desc"
+        # params["sortOrder"] = "asc" if ascending else "desc"
 
         if rikishi_id:
             params["rikishiId"] = rikishi_id

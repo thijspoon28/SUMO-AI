@@ -1,10 +1,8 @@
-import requests
+import requests  # type: ignore
 
 
 #
 # OLD
-#
-#
 #
 
 
