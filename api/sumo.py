@@ -6,15 +6,15 @@ from api.schemas import (
     BashoBanzuke,
     BashoData,
     BashoTorikumi,
-    KimariteMatches,
-    Kimarites,
+    KimariteMatchesResponse,
+    KimariteResponse,
     Measurement,
     Rank, 
     Rikishi,
-    RikishiMatches,
+    RikishiMatchesResponse,
     RikishiStats,
     RikishiVersus,
-    Rikishis,
+    RikishiResponse,
     Shikona,
 )
 
@@ -56,7 +56,7 @@ class SumoAPI:
         shikonas: bool | None = None,
         limit: int | None = None,
         skip: int | None = None,
-    ) -> Rikishis:
+    ) -> RikishiResponse:
         """Returns a subset of rikishi in the database, hard limit of 1000, use limit & skip to access all records
 
         Args:
@@ -99,7 +99,7 @@ class SumoAPI:
         if skip:
             params["skip"] = skip
 
-        return cls.request(url, params=params, schema=Rikishis)
+        return cls.request(url, params=params, schema=RikishiResponse)
 
     def get_rikishi(
         cls,
@@ -148,7 +148,7 @@ class SumoAPI:
         cls,
         rikishi_id: int,
         basho_id: str | None = None,
-    ) -> RikishiMatches:
+    ) -> RikishiMatchesResponse:
         """Returns all matches of a rikishi. Sorted by basho, then by day, most to least recent.
 
         Args:
@@ -163,7 +163,7 @@ class SumoAPI:
         if basho_id is not None:
             params["bashoId"] = basho_id
 
-        return cls.request(url, params=params, schema=RikishiMatches)
+        return cls.request(url, params=params, schema=RikishiMatchesResponse)
 
     def get_rikishi_versus(
         cls,
@@ -255,7 +255,7 @@ class SumoAPI:
         ascending: bool = True,
         limit: int | None = None,
         skip: int | None = None,
-    ) -> Kimarites:
+    ) -> KimariteResponse:
         """Returns statistics on the usage of kimarite including the count of usage and the last basho and day used.
         NOTE: the lastUsage is not gauranteed to be the actual last use on the specified day of the basho
 
@@ -269,7 +269,7 @@ class SumoAPI:
             Kimarites:
         """
 
-        url = f"{cls.BASE_URL}/api/kimarite?sortField={sortField}"
+        url = f"{cls.BASE_URL}/api/kimarite"
         params = {}
 
         params["sortField"] = sortField
@@ -280,7 +280,7 @@ class SumoAPI:
         if skip:
             params["skip"] = skip
 
-        return cls.request(url, params=params, schema=Kimarites)
+        return cls.request(url, params=params, schema=KimariteResponse)
 
     def get_kimarite_detail(
         cls,
@@ -288,7 +288,7 @@ class SumoAPI:
         ascending: bool = True,
         limit: int | None = None,
         skip: int | None = None,
-    ) -> KimariteMatches:
+    ) -> KimariteMatchesResponse:
         """Returns matches where the specified kimarite was used
         NOTE: the sort order is by basho then day and is not guaranteed to be the actual use order on that day.
 
@@ -311,7 +311,7 @@ class SumoAPI:
         if skip:
             params["skip"] = skip
 
-        return cls.request(url, schema=KimariteMatches)
+        return cls.request(url, schema=KimariteMatchesResponse)
 
     def get_measurements(
         cls,
