@@ -132,31 +132,13 @@ class TorikumiYusho(BaseModel):
     shikonaJp: str
 
 
-class Torikumi(BaseModel):
-    id: str
-    bashoId: str
-    division: str
-    day: int
-    matchNo: int
-    eastId: int
-    eastShikona: str
-    eastRank: str
-    westId: int
-    westShikona: str
-    westRank: str
-    kimarite: str
-    winnerId: int
-    winnerEn: str
-    winnerJp: str
-
-
 class BashoTorikumi(BaseModel):
     date: str
     startDate: str
     endDate: str
     yusho: list[TorikumiYusho]
     specialPrizes: list[SpecialPrize]
-    torikumi: list[Torikumi]
+    torikumi: list[Match]
 
 
 # https://www.sumo-api.com/api/kimarite?sortField=count
