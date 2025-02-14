@@ -74,7 +74,7 @@ class SumoAPI:
             if result is not None:
                 total = len(result.records)
                 maximum = result.total
-                estimate = f"{(maximum // 1000 + 1) * avg:.2f}s"
+                estimate = f"{(maximum // 1000 + 2) * avg:.2f}s"
 
             print(f"Cycle {cycles}: elapsed={spent:.2f}s, total={cur-start:.2f}s, records={total} / {maximum}, estimate={estimate}")
 
