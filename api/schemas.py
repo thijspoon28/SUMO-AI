@@ -174,7 +174,6 @@ class BashoBanzuke(BaseModel):
 class KimariteResponse(BaseModel):
     limit: int
     skip: int
-    total: int
     sortField: str
     sortOrder: str
     records: list[Kimarite] | None = []

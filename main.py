@@ -23,8 +23,8 @@ def main():
     # print(kimarite)
     # print(len(kimarite.records))
 
-    kimarite_detail = api.get_kimarite_detail('oshidashi')
-    print(kimarite_detail.records[10])
+    kimarite_detail = api.get_kimarite_detail('oshidashi', scrape=True)
+    # print(kimarite_detail.records[10])
     print(kimarite_detail.total)
     print(len(kimarite_detail.records))
 

@@ -1,3 +1,4 @@
+import time
 from pydantic import BaseModel
 import requests
 
@@ -45,16 +46,42 @@ class SumoAPI:
             return data
 
     def scrape(cls, url: str, params: dict, schema: BaseModel) -> BaseModel:
-        if params.get("skip"):
+        if params.get("skip") is None:
             params["skip"] = 0
-        if params.get("limit"):
+        if params.get("limit") is None:
             params["limit"] = 1000
 
         result = None
 
+        print(f">- Starting scrape for '{url}' -<")
+
+        cycles = -1
+        start = time.time()
+        prev = time.time()
+
+        avg = 0
+
         while True:
+            cycles += 1
+            cur = time.time()
+            spent = cur-prev
+            avg = ((avg * (cycles-1)) + spent) / cycles if cycles > 0 else 0
+
+            total = 0
+            maximum = "Unknown"
+            estimate = "Unknown"
+
+            if result is not None:
+                total = len(result.records)
+                maximum = result.total
+                estimate = f"{(maximum // 1000 + 1) * avg:.2f}s"
+
+            print(f"Cycle {cycles}: elapsed={spent:.2f}s, total={cur-start:.2f}s, records={total} / {maximum}, estimate={estimate}")
+
+            prev = cur
+
             data = cls.request(url, params=params, schema=schema)
-            amount = len(data.records)
+            amount = len(data.records) if data.records is not None else 0
 
             if amount == 0:
                 break
@@ -67,6 +94,9 @@ class SumoAPI:
             else:
                 result = data
 
+        cur = time.time()
+        total = len(result.records) if result is not None else 0
+        print(f">- Finished scrape cycles={cycles}, time={cur-start:.2f}s, records={total} -<")
         return result
 
     def get_rikishis(
