@@ -19,14 +19,14 @@ def main():
     # rikishis_stats = api.get_rikishi_stats(218)
     # print(rikishis_stats)
 
-    # kimarite = api.get_kimarite()
+    kimarite = api.get_kimarite()
     # print(kimarite)
-    # print(len(kimarite.records))
+    print(sum([i.count for i in kimarite.records]))
 
-    kimarite_detail = api.get_kimarite_detail('oshidashi', scrape=True)
-    # print(kimarite_detail.records[10])
-    print(kimarite_detail.total)
-    print(len(kimarite_detail.records))
+    # kimarite_detail = api.get_kimarite_detail('oshidashi', scrape=True)
+    # # print(kimarite_detail.records[10])
+    # print(kimarite_detail.total)
+    # print(len(kimarite_detail.records))
 
 
     
