@@ -22,9 +22,9 @@ def main():
     # rikishis_stats = api.get_rikishi_stats(218)
     # print(rikishis_stats)
 
-    # kimarite = api.get_kimarite()
+    kimarite = api.get_kimarite()
     # print(kimarite)
-    # print(len(kimarite.records))
+    print(sum([i.count for i in kimarite.records]))
 
     # kimarite_detail = api.get_kimarite_detail('oshidashi')
     # print(kimarite_detail.records[999])

@@ -1,3 +1,4 @@
+import time
 from pydantic import BaseModel
 import requests
 
@@ -9,7 +10,7 @@ from api.schemas import (
     KimariteMatchesResponse,
     KimariteResponse,
     Measurement,
-    Rank, 
+    Rank,
     Rikishi,
     RikishiMatchesResponse,
     RikishiStats,
@@ -44,6 +45,60 @@ class SumoAPI:
         else:
             return data
 
+    def scrape(cls, url: str, params: dict, schema: BaseModel) -> BaseModel:
+        if params.get("skip") is None:
+            params["skip"] = 0
+        if params.get("limit") is None:
+            params["limit"] = 1000
+
+        result = None
+
+        print(f">- Starting scrape for '{url}' -<")
+
+        cycles = -1
+        start = time.time()
+        prev = time.time()
+
+        avg = 0
+
+        while True:
+            cycles += 1
+            cur = time.time()
+            spent = cur-prev
+            avg = ((avg * (cycles-1)) + spent) / cycles if cycles > 0 else 0
+
+            total = 0
+            maximum = "Unknown"
+            estimate = "Unknown"
+
+            if result is not None:
+                total = len(result.records)
+                maximum = result.total
+                estimate = f"{(maximum // 1000 + 2) * avg:.2f}s"
+
+            print(f"Cycle {cycles}: elapsed={spent:.2f}s, total={cur-start:.2f}s, records={total} / {maximum}, estimate={estimate}")
+
+            prev = cur
+
+            data = cls.request(url, params=params, schema=schema)
+            amount = len(data.records) if data.records is not None else 0
+
+            if amount == 0:
+                break
+
+            params["skip"] += amount
+
+            if result is not None:
+                result.records += data.records
+
+            else:
+                result = data
+
+        cur = time.time()
+        total = len(result.records) if result is not None else 0
+        print(f">- Finished scrape cycles={cycles}, time={cur-start:.2f}s, records={total} -<")
+        return result
+
     def get_rikishis(
         cls,
         shikonaEn: str | None = None,
@@ -56,6 +111,7 @@ class SumoAPI:
         shikonas: bool | None = None,
         limit: int | None = None,
         skip: int | None = None,
+        scrape: bool = False,
     ) -> RikishiResponse:
         """Returns a subset of rikishi in the database, hard limit of 1000, use limit & skip to access all records
 
@@ -99,6 +155,9 @@ class SumoAPI:
         if skip:
             params["skip"] = skip
 
+        if scrape:
+            return cls.scrape(url, params=params, schema=RikishiResponse)
+
         return cls.request(url, params=params, schema=RikishiResponse)
 
     def get_rikishi(
@@ -131,7 +190,10 @@ class SumoAPI:
 
         return cls.request(url, params=params, schema=Rikishi)
 
-    def get_rikishi_stats(cls, rikishi_id: int) -> RikishiStats:
+    def get_rikishi_stats(
+        cls,
+        rikishi_id: int,
+    ) -> RikishiStats:
         """Returns a single rikishi's overall performance stats, more data to be added later.
 
         Args:
@@ -148,6 +210,9 @@ class SumoAPI:
         cls,
         rikishi_id: int,
         basho_id: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        scrape: bool = False,
     ) -> RikishiMatchesResponse:
         """Returns all matches of a rikishi. Sorted by basho, then by day, most to least recent.
 
@@ -162,6 +227,13 @@ class SumoAPI:
 
         if basho_id is not None:
             params["bashoId"] = basho_id
+        if limit:
+            params["limit"] = min(limit, 1000)
+        if skip:
+            params["skip"] = skip
+
+        if scrape:
+            return cls.scrape(url, params=params, schema=RikishiMatchesResponse)
 
         return cls.request(url, params=params, schema=RikishiMatchesResponse)
 
@@ -170,6 +242,9 @@ class SumoAPI:
         rikishi_id: int,
         opponent_id: int,
         basho_id: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        scrape: bool = False,
     ) -> RikishiVersus:
         """Returns all matches between two rikishi. Sorted by basho, then by day, most to least recent.
 
@@ -186,6 +261,13 @@ class SumoAPI:
 
         if basho_id is not None:
             params["bashoId"] = basho_id
+        if limit:
+            params["limit"] = min(limit, 1000)
+        if skip:
+            params["skip"] = skip
+
+        if scrape:
+            return cls.scrape(url, params=params, schema=RikishiVersus)
 
         return cls.request(url, params=params, schema=RikishiVersus)
 
@@ -209,6 +291,9 @@ class SumoAPI:
         cls,
         basho_id: str,
         division: Division | str,
+        limit: int | None = None,
+        skip: int | None = None,
+        scrape: bool = False,
     ) -> BashoBanzuke:
         """Returns a single basho, where bashoId is in the format YYYYMM, and the specified division's banzuke,
         where the division is any of Makuuchi, Juryo, Makushita, Sandanme, Jonidan or Jonokuchi.
@@ -223,6 +308,15 @@ class SumoAPI:
         division_value = division if isinstance(division, str) else division.value
 
         url = f"{cls.BASE_URL}/api/basho/{basho_id}/banzuke/{division_value}"
+        params = {}
+
+        if limit:
+            params["limit"] = min(limit, 1000)
+        if skip:
+            params["skip"] = skip
+
+        if scrape:
+            return cls.scrape(url, params=params, schema=BashoBanzuke)
 
         return cls.request(url, schema=BashoBanzuke)
 
@@ -231,6 +325,9 @@ class SumoAPI:
         basho_id: str,
         division: Division | str,
         day: int,
+        limit: int | None = None,
+        skip: int | None = None,
+        scrape: bool = False,
     ) -> BashoTorikumi:
         """Returns a single basho, where bashoId is in the format YYYYMM, and the specified division's torikumi
         of a given day.
@@ -246,6 +343,15 @@ class SumoAPI:
         division_value = division if isinstance(division, str) else division.value
 
         url = f"{cls.BASE_URL}/api/basho/{basho_id}/torikumi/{division_value}/{day}"
+        params = {}
+
+        if limit:
+            params["limit"] = min(limit, 1000)
+        if skip:
+            params["skip"] = skip
+
+        if scrape:
+            return cls.scrape(url, params=params, schema=BashoTorikumi)
 
         return cls.request(url, schema=BashoTorikumi)
 
@@ -255,6 +361,7 @@ class SumoAPI:
         ascending: bool = True,
         limit: int | None = None,
         skip: int | None = None,
+        scrape: bool = False,
     ) -> KimariteResponse:
         """Returns statistics on the usage of kimarite including the count of usage and the last basho and day used.
         NOTE: the lastUsage is not gauranteed to be the actual last use on the specified day of the basho
@@ -280,6 +387,9 @@ class SumoAPI:
         if skip:
             params["skip"] = skip
 
+        if scrape:
+            return cls.scrape(url, params=params, schema=KimariteResponse)
+
         return cls.request(url, params=params, schema=KimariteResponse)
 
     def get_kimarite_detail(
@@ -288,6 +398,7 @@ class SumoAPI:
         ascending: bool = True,
         limit: int | None = None,
         skip: int | None = None,
+        scrape: bool = False,
     ) -> KimariteMatchesResponse:
         """Returns matches where the specified kimarite was used
         NOTE: the sort order is by basho then day and is not guaranteed to be the actual use order on that day.
@@ -311,7 +422,10 @@ class SumoAPI:
         if skip:
             params["skip"] = skip
 
-        return cls.request(url, schema=KimariteMatchesResponse)
+        if scrape:
+            return cls.scrape(url, params=params, schema=KimariteMatchesResponse)
+
+        return cls.request(url, params=params, schema=KimariteMatchesResponse)
 
     def get_measurements(
         cls,
