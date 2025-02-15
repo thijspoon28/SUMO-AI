@@ -7,11 +7,12 @@ from database.session import init_db
 
 def main():
     init_db(delete=True)
-    # scrape_basho("201903", Division.Makuuchi.value)
+    scrape_basho("196001", Division.Makuuchi.value)
+
 
     # api = SumoAPI()
 
-    # rikishis = api.get_rikishis()
+    # rikishis = api.get_rikishis(scrape=True)
     # print(len(rikishis.records))
     # active_Rikishi = []
     # for i in rikishis.records:

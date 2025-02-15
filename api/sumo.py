@@ -137,6 +137,8 @@ class SumoAPI:
 
         url = f"{cls.BASE_URL}/api/rikishis"
         params = {}
+        
+        params["intai"] = True
 
         if shikonaEn:
             params["shikonaEn"] = shikonaEn
@@ -184,6 +186,8 @@ class SumoAPI:
         """
         url = f"{cls.BASE_URL}/api/rikishi/{rikishi_id}"
         params = {}
+        
+        params["intai"] = True
 
         if measurements is not None:
             params["measurements"] = str(measurements).lower()

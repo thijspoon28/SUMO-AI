@@ -10,6 +10,29 @@ import api.schemas as schema
 
 
 
+def estimate_iterable(iterable):
+    start = time.time()
+    prev = time.time()
+    cycles = 0
+    avg = 0
+    maximum = len(iterable)
+
+    print(f"Cycle {cycles}: elapsed={0.0:.2f}s, total={0.0:.2f}s, estimate=Unknown", end='')
+
+    for i in iterable:
+        yield i
+        
+        cycles += 1
+
+        cur = time.time()
+        spent = cur-prev
+        prev = cur
+
+        avg = ((avg * (cycles-1)) + spent) / cycles
+
+        estimate = f"{(maximum) * avg:.2f}s"
+
+        print(f"Cycle {cycles}: elapsed={spent:.2f}s, total={cur-start:.2f}s, estimate={estimate}", end='')
 
 
 
@@ -21,88 +44,58 @@ def display_state(info: str, start_time: float, count: int) -> None:
 def scramble_rikishi(rikishi_id: int) -> Rikishi:
     api = SumoAPI()
 
-    is_available = True
 
-    try:
-        rikishi = api.get_rikishi(rikishi_id)
+    rikishi = api.get_rikishi(rikishi_id)
         
-    except Exception:
-        is_available = False
+    if not rikishi.currentRank:
         ranks = api.get_ranks(rikishi_id)
+        rikishi.currentRank = ranks[0].rank
 
+    if not rikishi.height or not rikishi.weight:
         measurements = api.get_measurements(rikishi_id)
         measurements = measurements if len(measurements) > 0 else [schema.Measurement(id="", bashoId="", rikishiId=0, height=-1, weight=-1)]
-        
+        rikishi.height = measurements[0].height
+        rikishi.weight = measurements[0].weight
+    
+    if not rikishi.shikonaEn or not rikishi.shikonaJp:
         shikonas = api.get_shikonas(rikishi_id)
+        rikishi.shikonaEn = shikonas[0].shikonaEn
+        rikishi.shikonaJp = shikonas[0].shikonaJp
 
     stat = api.get_rikishi_stats(rikishi_id)
 
-    if is_available:
-        rikishi_model = Rikishi(
-            id=rikishi.id,
-            sumodb_id=rikishi.sumodbId,
-            nsk_id=rikishi.nskId,
-            shikona_en=rikishi.shikonaEn,
-            shikona_jp=rikishi.shikonaJp,
-            current_rank=rikishi.currentRank,
-            heya=rikishi.heya,
-            birth_date=rikishi.birthDate,
-            shusshin=rikishi.shusshin,
-            height=rikishi.height,
-            weight=rikishi.weight,
-            debut=rikishi.debut,
-            intai=rikishi.intai,
-            updated_at=rikishi.updatedAt,
-            created_at=rikishi.createdAt,
+    rikishi_model = Rikishi(
+        id=rikishi.id,
+        sumodb_id=rikishi.sumodbId,
+        nsk_id=rikishi.nskId,
+        shikona_en=rikishi.shikonaEn,
+        shikona_jp=rikishi.shikonaJp,
+        current_rank=rikishi.currentRank,
+        heya=rikishi.heya,
+        birth_date=rikishi.birthDate,
+        shusshin=rikishi.shusshin,
+        height=rikishi.height,
+        weight=rikishi.weight,
+        debut=rikishi.debut,
+        intai=rikishi.intai,
+        updated_at=rikishi.updatedAt,
+        created_at=rikishi.createdAt,
 
-            absence_by_division=stat.absenceByDivision,
-            basho_count=stat.basho,
-            basho_count_by_division=stat.bashoByDivision,
-            loss_by_division=stat.lossByDivision,
-            sansho=stat.sansho,
-            total_absences=stat.totalAbsences,
-            total_by_division=stat.totalByDivision,
-            total_losses=stat.totalLosses,
-            total_matches=stat.totalMatches,
-            total_wins=stat.totalWins,
-            wins_by_division=stat.winsByDivision,
-            yusho_count=stat.yusho,
-            yusho_count_by_division=stat.yushoByDivision,
-        )
+        absence_by_division=stat.absenceByDivision,
+        basho_count=stat.basho,
+        basho_count_by_division=stat.bashoByDivision,
+        loss_by_division=stat.lossByDivision,
+        sansho=stat.sansho,
+        total_absences=stat.totalAbsences,
+        total_by_division=stat.totalByDivision,
+        total_losses=stat.totalLosses,
+        total_matches=stat.totalMatches,
+        total_wins=stat.totalWins,
+        wins_by_division=stat.winsByDivision,
+        yusho_count=stat.yusho,
+        yusho_count_by_division=stat.yushoByDivision,
+    )
     
-    else:
-        rikishi_model = Rikishi(
-            id=rikishi_id,
-            sumodb_id=-1,
-            nsk_id=-1,
-            shikona_en=shikonas[0].shikonaEn,
-            shikona_jp=shikonas[0].shikonaJp,
-            current_rank=ranks[0].rank,
-            heya="Retired",
-            birth_date=datetime.min,
-            shusshin="Retired",
-            height=measurements[0].height,
-            weight=measurements[0].weight,
-            debut="Retired",
-            intai=datetime.min,
-            updated_at=None,
-            created_at=None,
-
-            absence_by_division=stat.absenceByDivision,
-            basho_count=stat.basho,
-            basho_count_by_division=stat.bashoByDivision,
-            loss_by_division=stat.lossByDivision,
-            sansho=stat.sansho,
-            total_absences=stat.totalAbsences,
-            total_by_division=stat.totalByDivision,
-            total_losses=stat.totalLosses,
-            total_matches=stat.totalMatches,
-            total_wins=stat.totalWins,
-            wins_by_division=stat.winsByDivision,
-            yusho_count=stat.yusho,
-            yusho_count_by_division=stat.yushoByDivision,
-        )
-
     return rikishi_model
 
 
@@ -116,7 +109,7 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
     basho = api.get_basho(basho_id)
     basho_benzuke = api.get_basho_banzuke(basho_id, division)
 
-    count = 1
+    count = 0
 
     basho_model = find_basho(basho_id)
     if basho_model is None:
@@ -126,16 +119,16 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
             start_date=basho.startDate,
             end_date=basho.endDate,
         )
+        count += 1
         session.add(basho_model)
-    
-    display_state("Retrieved Basho", start_time, count)
 
     yusho = {yu.rikishiId: yu.type for yu in basho.yusho}
     special_prize = {sp.rikishiId: sp.type for sp in basho.specialPrizes}
 
     rikishis: list[BashoBanzukeRikishi] = basho_benzuke.east + basho_benzuke.west
 
-    for banzuke_rikishi in rikishis:
+    for banzuke_rikishi in estimate_iterable(rikishis):
+        print(f", records={count}")
         r = scramble_rikishi(banzuke_rikishi.rikishiID)
 
         rik_bas = RikishiBasho(
@@ -213,7 +206,6 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
         session.commit()
 
     display_state("Finished scrape", start_time, count)
-    input(f"Inputting {count} records into the database. Press ENTER to proceed.")
 
 
 def scrape_api(limit: int | None = None):

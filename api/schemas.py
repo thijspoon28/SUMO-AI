@@ -117,19 +117,19 @@ class Kimarite(BaseModel):
 class Rikishi(BaseModel):
     id: int
     sumodbId: int | None = None
-    nskId: int
-    shikonaEn: str
+    nskId: int | None = None
+    shikonaEn: str | None = None
     shikonaJp: str | None = None
-    currentRank: str
+    currentRank: str | None = None
     heya: str | None = None
     birthDate: datetime | None = None
     shusshin: str | None = None
     measurementHistory: list[Measurement] | None = []
     rankHistory: list[Rank] | None = []
     shikonaHistory: list[Shikona] | None = []
-    height: float
-    weight: float
-    debut: str
+    height: float | None = None
+    weight: float | None = None
+    debut: str | None = None
     intai: datetime | None = None
     updatedAt: datetime | None = None
     createdAt: datetime | None = None
