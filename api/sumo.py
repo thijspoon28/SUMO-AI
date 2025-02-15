@@ -471,7 +471,6 @@ class SumoAPI:
             return cls.scrape(url, params=params)
 
         data = cls.request(url, params=params)
-        print(data, params)
         return [Measurement(**d) for d in data]
 
     def get_ranks(
