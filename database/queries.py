@@ -1,6 +1,18 @@
 from sqlalchemy import or_, select
+from api.schemas import Rikishi
 from database.models import Basho, Match
 from database.session import get_session
+
+
+
+def find_rikishi(rikishi_id: int) -> Basho | None:
+    session = get_session()
+
+    query = select(Rikishi).where(
+        Rikishi.id == rikishi_id
+    )
+
+    return session.execute(query).scalars().first()
 
 
 def find_basho(basho_id: str) -> Basho | None:

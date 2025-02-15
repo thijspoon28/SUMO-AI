@@ -1,7 +1,7 @@
 import time
 from api.schemas import BashoBanzukeRikishi
 from database.models import Basho, Match, Rikishi, RikishiBasho
-from database.queries import find_basho, find_match
+from database.queries import find_basho, find_match, find_rikishi
 from database.session import get_session
 from api.enums import Division
 from api.sumo import SumoAPI
@@ -42,7 +42,6 @@ def display_state(info: str, start_time: float, count: int) -> None:
 
 def scramble_rikishi(rikishi_id: int) -> Rikishi:
     api = SumoAPI()
-
 
     rikishi = api.get_rikishi(rikishi_id)
         
@@ -128,6 +127,10 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
 
     for banzuke_rikishi in estimate_iterable(rikishis):
         print(f", records={count}")
+        
+        if find_rikishi(banzuke_rikishi.rikishiID) is not None:
+            continue
+            
         r = scramble_rikishi(banzuke_rikishi.rikishiID)
 
         rik_bas = RikishiBasho(

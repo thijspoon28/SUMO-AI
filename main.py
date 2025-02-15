@@ -84,6 +84,10 @@ def main():
     # basho = api.get_basho(199011)
     # print(basho.specialPrizes)
 
+    for i in range(1958, 2025):
+        for j in range(1, 12, 2):
+            basho_id = f"{i}{j:0>{2}}"
+            print(basho_id)
     
 
 if __name__ == "__main__":
