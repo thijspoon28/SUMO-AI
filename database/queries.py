@@ -1,6 +1,5 @@
 from sqlalchemy import or_, select
-from api.schemas import Rikishi
-from database.models import Basho, Match
+from database.models import Basho, Match, Rikishi
 from database.session import get_session
 
 
