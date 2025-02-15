@@ -1,4 +1,3 @@
-from datetime import datetime
 import time
 from api.schemas import BashoBanzukeRikishi
 from database.models import Basho, Match, Rikishi, RikishiBasho
@@ -13,7 +12,7 @@ import api.schemas as schema
 def estimate_iterable(iterable):
     start = time.time()
     prev = time.time()
-    cycles = 0
+    cycles = -1
     avg = 0
     maximum = len(iterable)
 
@@ -146,26 +145,6 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
 
         for match_ in banzuke_rikishi.record:
             if match_.opponentID == 0:
-                new = Match(
-                    basho_id=basho_id,
-                    division=division,
-                    day=-1,
-                    match_no=-1,
-                    east_id=-1,
-                    east_shikona="Absent",
-                    east_rank="Absent",
-                    west_id=-1,
-                    west_shikona="Absent",
-                    west_rank="Absent",
-                    kimarite="Absent",
-                    winner_id=-1,
-                    winner_en="Absent",
-                    winner_jp="Absent",
-                )
-                session.add(new)
-
-                count += 1
-                display_state("Added match", start_time, count)
                 continue
 
             if (
