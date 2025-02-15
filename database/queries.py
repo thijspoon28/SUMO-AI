@@ -3,7 +3,14 @@ from database.models import Basho, Match
 from database.session import get_session
 
 
-def update_or_add_basho(basho: str) -> Basho: ...
+def find_basho(basho_id: str) -> Basho | None:
+    session = get_session()
+
+    query = select(Basho).where(
+        Basho.id == basho_id
+    )
+
+    return session.execute(query).scalars().first()
 
 
 def find_match(

@@ -35,6 +35,10 @@ class SumoAPI:
         try:
             data = response.json()
         except Exception as exc:
+            print()
+            print(url, params)
+            print(response)
+            print(response.text)
             raise Exception("API SOILED ITSELF (it's probably down)") from exc
 
         if schema:
@@ -305,7 +309,7 @@ class SumoAPI:
         Returns:
             BashoBanzuke:
         """
-        division_value = division if isinstance(division, str) else division.value
+        division_value = division.value if isinstance(division, Division) else division
 
         url = f"{cls.BASE_URL}/api/basho/{basho_id}/banzuke/{division_value}"
         params = {}
@@ -340,7 +344,7 @@ class SumoAPI:
         Returns:
             BashoTorikumi:
         """
-        division_value = division if isinstance(division, str) else division.value
+        division_value = division.value if isinstance(division, Division) else division
 
         url = f"{cls.BASE_URL}/api/basho/{basho_id}/torikumi/{division_value}/{day}"
         params = {}

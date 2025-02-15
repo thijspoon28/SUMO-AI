@@ -138,7 +138,7 @@ class Rikishi(BaseModel):
 class RikishiVersus(BaseModel):
     kimariteLosses: dict[str, int]
     kimariteWins: dict[str, int]
-    matches: list[RikishiMatch]
+    matches: list[RikishiMatch] = []
     opponentWins: int
     rikishiWins: int
     total: int

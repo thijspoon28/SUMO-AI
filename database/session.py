@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 
 def get_engine():
-    return create_engine("sqlite:///sumo.db", echo=True)
+    return create_engine("sqlite:///sumo.db", echo=False)
 
 
 def get_session():
