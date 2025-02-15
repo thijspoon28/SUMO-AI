@@ -89,7 +89,7 @@ class BashoRikishi(BaseModel):
 class SpecialPrize(BaseModel):
     type: str
     rikishiId: int
-    shikonaEn: str | None = None
+    shikonaEn: str
     shikonaJp: str | None = None
 
 

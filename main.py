@@ -24,6 +24,7 @@ def main():
 
     # kimarite = api.get_kimarite()
     # # print(kimarite)
+    # print(kimarite)
     # print(sum([i.count for i in kimarite.records]))
 
     # kimarite_detail = api.get_kimarite_detail('oshidashi')
@@ -38,8 +39,8 @@ def main():
     # print(basho.yusho)
     # print()
 
-    basho_banzuke = api.get_basho_banzuke(196011, 'Makuuchi')
-    print(basho_banzuke)
+    # basho_banzuke = api.get_basho_banzuke(196011, 'Makuuchi')
+    # print(basho_banzuke)
 
     # a = api.get_ranks(216)
     # print(len(a))
@@ -59,6 +60,16 @@ def main():
     ### ERROR
     # basho_torkikumi = api.get_basho_torikumi(196011, 'Makuuchi', 10)
     # print(basho_torkikumi)
+    #ranking / results of the bashi
+    # basho_banzuke = api.get_basho_banzuke(201111, 'Makuuchi')
+    # print(basho_banzuke)
+    
+    # matches on a given day
+    # basho_torkikumi = api.get_basho_torikumi(196011, 'Makuuchi', 10)
+    # print(basho_torkikumi)
+
+    # basho = api.get_basho(199011)
+    # print(basho.specialPrizes)
 
     
 
