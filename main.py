@@ -7,7 +7,13 @@ from database.session import init_db
 
 def main():
     init_db(delete=True)
-    scrape_basho("196001", Division.Makuuchi.value)
+    for i in range(2010, 2025):
+            for j in range(1, 12, 2):
+                basho_id = f"{i}{j:0>{2}}"
+                print(basho_id)
+                if basho_id == 201103 or basho_id == 202007:
+                    continue
+                scrape_basho(basho_id, Division.Makuuchi.value)
 
 
     # api = SumoAPI()
