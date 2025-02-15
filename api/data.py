@@ -33,4 +33,3 @@ def get_matches():
         print("WARING! COULD NOT PARSE JSON, GOT RAW TEXT")
 
     return data
-

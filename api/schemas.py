@@ -23,7 +23,7 @@ class Shikona(BaseModel):
     bashoId: str
     rikishiId: int
     shikonaEn: str
-    shikonaJp: str
+    shikonaJp: str | None = None
 
 
 class RikishiStats(BaseModel):
@@ -57,7 +57,7 @@ class Match(BaseModel):
     kimarite: str
     winnerId: int
     winnerEn: str
-    winnerJp: str
+    winnerJp: str | None = None
 
 
 # Yes, this is the same as Match above, just missing the Id
@@ -76,14 +76,14 @@ class RikishiMatch(BaseModel):
     kimarite: str
     winnerId: int
     winnerEn: str
-    winnerJp: str
+    winnerJp: str | None = None
 
 
 class BashoRikishi(BaseModel):
     type: str
     rikishiId: int
     shikonaEn: str
-    shikonaJp: str
+    shikonaJp: str | None = None
 
 
 class SpecialPrize(BaseModel):
@@ -96,7 +96,7 @@ class SpecialPrize(BaseModel):
 class BashoBanzukeRikishiRecord(BaseModel):
     result: str
     opponentShikonaEn: str
-    opponentShikonaJp: str
+    opponentShikonaJp: str | None = None
     opponentID: int
     kimarite: str
 

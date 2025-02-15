@@ -22,9 +22,9 @@ def main():
     # rikishis_stats = api.get_rikishi_stats(218)
     # print(rikishis_stats)
 
-    kimarite = api.get_kimarite()
-    # print(kimarite)
-    print(sum([i.count for i in kimarite.records]))
+    # kimarite = api.get_kimarite()
+    # # print(kimarite)
+    # print(sum([i.count for i in kimarite.records]))
 
     # kimarite_detail = api.get_kimarite_detail('oshidashi')
     # print(kimarite_detail.records[999])
@@ -33,13 +33,32 @@ def main():
 
     # rikishi_matches = api.get_rikishi_matches(218)
     # print(rikishi_matches)
+    # basho = api.get_basho(196011)
+    # print(basho.specialPrizes)
+    # print(basho.yusho)
+    # print()
 
-    # basho_banzuke = api.get_basho_banzuke(196011, 'Makuuchi')
-    # print(basho_banzuke)
+    basho_banzuke = api.get_basho_banzuke(196011, 'Makuuchi')
+    print(basho_banzuke)
+
+    # a = api.get_ranks(216)
+    # print(len(a))
+    
+    # b = api.get_measurements(216)
+    # print(len(b))
+
+    # c = api.get_shikonas(216)
+    # print(len(c))
+
+    # x = api.get_rikishi(2, ranks=True)
+    # print(len(x.rankHistory))
+
+    # x = api.get_ranks(2)
+    # print(len(x))
 
     ### ERROR
-    basho_torkikumi = api.get_basho_torikumi(196011, 'Makuuchi', 10)
-    print(basho_torkikumi)
+    # basho_torkikumi = api.get_basho_torikumi(196011, 'Makuuchi', 10)
+    # print(basho_torkikumi)
 
     
 

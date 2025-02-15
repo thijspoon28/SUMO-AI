@@ -432,6 +432,9 @@ class SumoAPI:
         rikishi_id: int | None = None,
         basho_id: str | None = None,
         ascending: bool = True,
+        limit: int | None = None,
+        skip: int | None = None,
+        scrape: bool = False,
     ) -> list[Measurement]:
         """Returns measurement changes by rikishi or basho
         NOTE: the sort order is by basho, default descending order.
@@ -440,6 +443,8 @@ class SumoAPI:
             rikishi_id (int, optional): filter on rikishi by ID. Defaults to None.
             basho_id (str, optional): filter on basho in format (format yyyymm, e.g 202301). Defaults to None.
             ascending (bool, optional): asc | desc. Defaults to True.
+            limit (int, optional): how many results to return, 1000 hard limit. Defaults to None.
+            skip (int, optional): skip over the number of results specified. Defaults to None.
 
         Returns:
             list[Measurement]:
@@ -447,14 +452,22 @@ class SumoAPI:
         url = f"{cls.BASE_URL}/api/measurements"
         params = {}
 
-        params["sortOrder"] = "asc" if ascending else "desc"
+        # params["sortOrder"] = "asc" if ascending else "desc"
 
         if rikishi_id:
             params["rikishiId"] = rikishi_id
         if basho_id:
             params["bashoId"] = basho_id
+        if limit:
+            params["limit"] = min(limit, 1000)
+        if skip:
+            params["skip"] = skip
+
+        if scrape:
+            return cls.scrape(url, params=params)
 
         data = cls.request(url, params=params)
+        print(data, params)
         return [Measurement(**d) for d in data]
 
     def get_ranks(
@@ -462,6 +475,9 @@ class SumoAPI:
         rikishi_id: int | None = None,
         basho_id: str | None = None,
         # ascending: bool = True,
+        limit: int | None = None,
+        skip: int | None = None,
+        scrape: bool = False,
     ) -> list[Rank]:
         """Returns rank changes by rikishi or basho
         NOTE: the sort order is by basho, default descending order.
@@ -470,6 +486,8 @@ class SumoAPI:
             rikishi_id (int, optional): filter on rikishi by ID. Defaults to None.
             basho_id (str, optional): filter on basho in format (format yyyymm, e.g 202301). Defaults to None.
             ascending (bool, optional): asc | desc. Defaults to True.
+            limit (int, optional): how many results to return, 1000 hard limit. Defaults to None.
+            skip (int, optional): skip over the number of results specified. Defaults to None.
 
         Returns:
             list[Rank]:
@@ -483,9 +501,16 @@ class SumoAPI:
             params["rikishiId"] = rikishi_id
         if basho_id:
             params["bashoId"] = basho_id
+        if limit:
+            params["limit"] = min(limit, 1000)
+        if skip:
+            params["skip"] = skip
 
         if not rikishi_id and not basho_id:
             raise ValueError("Provide 'rikishi_id', 'basho_id' or both")
+
+        if scrape:
+            return cls.scrape(url, params=params)
 
         data = cls.request(url, params=params)
         return [Rank(**d) for d in data]
@@ -495,6 +520,9 @@ class SumoAPI:
         rikishi_id: int | None = None,
         basho_id: str | None = None,
         # ascending: bool = True,
+        limit: int | None = None,
+        skip: int | None = None,
+        scrape: bool = False,
     ) -> list[Shikona]:
         """Returns shikona changes by rikishi or basho
         NOTE: the sort order is by basho, default descending order.
@@ -503,6 +531,8 @@ class SumoAPI:
             rikishi_id (int, optional): filter on rikishi by ID. Defaults to None.
             basho_id (str, optional): filter on basho in format (format yyyymm, e.g 202301). Defaults to None.
             ascending (bool, optional): asc | desc. Defaults to True.
+            limit (int, optional): how many results to return, 1000 hard limit. Defaults to None.
+            skip (int, optional): skip over the number of results specified. Defaults to None.
 
         Returns:
             list[Shikona]:
@@ -516,6 +546,13 @@ class SumoAPI:
             params["rikishiId"] = rikishi_id
         if basho_id:
             params["bashoId"] = basho_id
+        if limit:
+            params["limit"] = min(limit, 1000)
+        if skip:
+            params["skip"] = skip
+
+        if scrape:
+            return cls.scrape(url, params=params)
 
         data = cls.request(url, params=params)
         return [Shikona(**d) for d in data]
