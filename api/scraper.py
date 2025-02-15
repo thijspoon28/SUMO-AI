@@ -38,7 +38,7 @@ def scramble_rikishi(rikishi_id: int) -> Rikishi:
     if is_available:
         rikishi_model = Rikishi(
             id=rikishi.id,
-            sumodb_id=rikishi.sum,
+            sumodb_id=rikishi.sumodbId,
             nsk_id=rikishi.nskId,
             shikona_en=rikishi.shikonaEn,
             shikona_jp=rikishi.shikonaJp,

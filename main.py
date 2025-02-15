@@ -5,7 +5,7 @@ from api.sumo import SumoAPI
 
 
 def main():
-    scrape_basho("196001", Division.Makuuchi.value)
+    scrape_basho("201903", Division.Makuuchi.value)
     # api = SumoAPI()
 
     # rikishis = api.get_rikishis()
