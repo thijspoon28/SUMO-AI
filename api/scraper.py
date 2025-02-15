@@ -27,7 +27,7 @@ def estimate_iterable(iterable):
         spent = cur-prev
         prev = cur
 
-        avg = ((avg * (cycles-1)) + spent) / cycles
+        avg = ((avg * (cycles-1)) + spent) / cycles if cycles > 0 else 0
 
         estimate = f"{(maximum) * avg:.2f}s"
 
@@ -127,10 +127,10 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
 
     for banzuke_rikishi in estimate_iterable(rikishis):
         print(f", records={count}")
-        
+
         if find_rikishi(banzuke_rikishi.rikishiID) is not None:
             continue
-            
+
         r = scramble_rikishi(banzuke_rikishi.rikishiID)
 
         rik_bas = RikishiBasho(
@@ -190,7 +190,7 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
     display_state("Finished scrape", start_time, count)
 
 
-def scrape_api(limit: int | None = None):
+def scrape_all(limit: int | None = None):
     api = SumoAPI()
     session = get_session()
 
@@ -210,38 +210,7 @@ def scrape_api(limit: int | None = None):
     rikishi_models: list[Rikishi] = []
 
     for rikishi in rikishis.records:
-        stat = api.get_rikishi_stats(rikishi.id)
-
-        r = Rikishi(
-            id=rikishi.id,
-            sumodb_id=rikishi.sumodbId,
-            nsk_id=rikishi.nskId,
-            shikona_en=rikishi.shikonaEn,
-            shikona_jp=rikishi.shikonaJp,
-            current_rank=rikishi.currentRank,
-            heya=rikishi.heya,
-            birth_date=rikishi.birthDate,
-            shusshin=rikishi.shusshin,
-            height=rikishi.height,
-            weight=rikishi.weight,
-            debut=rikishi.debut,
-            intai=rikishi.intai,
-            updated_at=rikishi.updatedAt,
-            created_at=rikishi.createdAt,
-            absence_by_division=stat.absenceByDivision,
-            basho_count=stat.basho,
-            basho_count_by_division=stat.bashoByDivision,
-            loss_by_division=stat.lossByDivision,
-            sansho=stat.sansho,
-            total_absences=stat.totalAbsences,
-            total_by_division=stat.totalByDivision,
-            total_losses=stat.totalLosses,
-            total_matches=stat.totalMatches,
-            total_wins=stat.totalWins,
-            wins_by_division=stat.winsByDivision,
-            yusho_count=stat.yusho,
-            yusho_count_by_division=stat.yushoByDivision,
-        )
+        r = scramble_rikishi(rikishi.id)
 
         session.add(r)
         session.refresh(r)
