@@ -49,6 +49,8 @@ class Match(Base):
     east_rikishi = relationship("Rikishi", foreign_keys=[east_id], back_populates="east_matches")
     west_rikishi = relationship("Rikishi", foreign_keys=[west_id], back_populates="west_matches")
 
+    basho = relationship("Basho", back_populates="matches")
+
     def concat_id(self) -> str:
         return f"{self.basho_id}-{self.day}-{self.east_id}-{self.west_id}"
 
@@ -107,13 +109,13 @@ class Basho(Base):
     rikishis: Mapped["RikishiBasho"] = relationship(
         back_populates="basho", cascade="all, delete"
     )
-    matches = relationship(Match, backref="rikishi")
+    matches = relationship(Match, back_populates="basho")
 
 
 class RikishiBasho(Base):
     __tablename__ = "rikishi_basho"
     rikishi_id = Column(Integer, ForeignKey("rikishi.id"), primary_key=True)
-    basho_id = Column(Integer, ForeignKey("basho.id"), primary_key=True)
+    basho_id = Column(String, ForeignKey("basho.id"), primary_key=True)
     special_prize = Column(String, nullable=True)
     yusho = Column(String, nullable=True)
 

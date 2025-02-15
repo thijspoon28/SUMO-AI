@@ -11,6 +11,8 @@ import api.schemas as schema
 
 
 
+
+
 def display_state(info: str, start_time: float, count: int) -> None:
     cur_time = time.time()
     print(f"> {info} - elapsed={cur_time - start_time:.2f}s - record={count}")
@@ -142,9 +144,6 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
             special_prize=special_prize.get(r.id),
             yusho=yusho.get(r.id),
         )
-
-        rik_bas.rikishi = r
-        rik_bas.basho = basho_model
 
         session.add(r)
         session.add(rik_bas)
