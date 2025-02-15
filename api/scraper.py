@@ -13,7 +13,7 @@ import api.schemas as schema
 
 def display_state(info: str, start_time: float, count: int) -> None:
     cur_time = time.time()
-    print(f"> {info} - elapsed={cur_time - start_time:.2f}s - count={count}")
+    print(f"> {info} - elapsed={cur_time - start_time:.2f}s - record={count}")
 
 
 def scramble_rikishi(rikishi_id: int) -> Rikishi:
@@ -174,8 +174,8 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
 
                 count += 1
                 display_state("Added match", start_time, count)
-
                 continue
+
             if (
                 find_match(basho_id, division, r.id, match_.opponentID)
                 is not None
@@ -211,11 +211,10 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
                 count += 1
                 display_state("Added match", start_time, count)
 
+        session.commit()
+
     display_state("Finished scrape", start_time, count)
     input(f"Inputting {count} records into the database. Press ENTER to proceed.")
-    print("Comminting...")
-    session.commit()
-    print("Fin.")
 
 
 def scrape_api(limit: int | None = None):

@@ -8,7 +8,7 @@ from database.session import init_db
 def main():
     init_db()
 
-    # scrape_basho("196001", Division.Makuuchi.value)
+    scrape_basho("196001", Division.Makuuchi.value)
     # api = SumoAPI()
 
     # rikishis = api.get_rikishis()
