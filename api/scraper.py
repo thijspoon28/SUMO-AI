@@ -9,14 +9,14 @@ import api.schemas as schema
 
 
 
-def estimate_iterable(iterable):
+def estimate_iterable(iterable, interval: int = 1):
     start = time.time()
     prev = time.time()
     cycles = -1
     avg = 0
     maximum = len(iterable)
 
-    print(f"Cycle {cycles}: elapsed={0.0:.2f}s, total={0.0:.2f}s, estimate=Unknown", end='')
+    x = 0
 
     for i in iterable:
         yield i
@@ -31,7 +31,11 @@ def estimate_iterable(iterable):
 
         estimate = f"{(maximum) * avg:.2f}s"
 
-        print(f"Cycle {cycles}: elapsed={spent:.2f}s, total={cur-start:.2f}s, estimate={estimate}", end='')
+        if x % interval == 0:
+            x = 0
+            print(f"Cycle {cycles}: elapsed={spent:.2f}s, total={cur-start:.2f}s, estimate={estimate}", end='')
+
+        x += 1
 
 
 
@@ -125,26 +129,24 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
 
     rikishis: list[BashoBanzukeRikishi] = basho_benzuke.east + basho_benzuke.west
 
-    for banzuke_rikishi in estimate_iterable(rikishis):
-        print(f", records={count}")
+    for banzuke_rikishi in estimate_iterable(rikishis, 10):
+        r = find_rikishi(banzuke_rikishi.rikishiID)
 
-        if find_rikishi(banzuke_rikishi.rikishiID) is not None:
-            continue
+        if r is None:
+            r = scramble_rikishi(banzuke_rikishi.rikishiID)
 
-        r = scramble_rikishi(banzuke_rikishi.rikishiID)
+            rik_bas = RikishiBasho(
+                rikishi_id=r.id,
+                basho_id=basho_id,
+                special_prize=special_prize.get(r.id),
+                yusho=yusho.get(r.id),
+            )
 
-        rik_bas = RikishiBasho(
-            rikishi_id=r.id,
-            basho_id=basho_id,
-            special_prize=special_prize.get(r.id),
-            yusho=yusho.get(r.id),
-        )
+            session.add(r)
+            session.add(rik_bas)
 
-        session.add(r)
-        session.add(rik_bas)
-
-        count += 2
-        display_state(f"Added Rikishi({r.id})", start_time, count)
+            count += 2
+            # display_state(f"Added Rikishi({r.id})", start_time, count)
 
         for match_ in banzuke_rikishi.record:
             if match_.opponentID == 0:
@@ -183,7 +185,7 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
                 session.add(new)
 
                 count += 1
-                display_state("Added match", start_time, count)
+                # display_state("Added match", start_time, count)
 
         session.commit()
 
