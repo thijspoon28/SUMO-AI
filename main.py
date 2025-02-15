@@ -2,10 +2,13 @@
 from api.enums import Division
 from api.scraper import scrape_basho
 from api.sumo import SumoAPI
+from database.session import init_db
 
 
 def main():
-    scrape_basho("196001", Division.Makuuchi.value)
+    init_db()
+
+    # scrape_basho("196001", Division.Makuuchi.value)
     # api = SumoAPI()
 
     # rikishis = api.get_rikishis()

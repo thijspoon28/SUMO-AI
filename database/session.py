@@ -1,5 +1,8 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
+import sqlalchemy
 from sqlalchemy.orm import sessionmaker
+
+from database.models import Base, Rikishi
 
 
 
@@ -13,6 +16,11 @@ def get_session():
     return Session()
 
 
-if __name__ == "__main__":
-    engine = get_engine()
-    # Base.metadata.create_all(engine)
+def init_db():
+    session = get_session()
+    q = select(Rikishi)
+
+    try:
+        session.execute(q)
+    except sqlalchemy.exc.OperationalError:
+        Base.metadata.create_all(get_engine())
