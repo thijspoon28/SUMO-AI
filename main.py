@@ -16,6 +16,9 @@ def main():
 
     # print(rikishi_id)
 
+    # rikishi = api.get_rikishi(218)
+    # print(rikishi)
+
     # rikishis_stats = api.get_rikishi_stats(218)
     # print(rikishis_stats)
 
@@ -23,11 +26,20 @@ def main():
     # print(kimarite)
     # print(len(kimarite.records))
 
-    kimarite_detail = api.get_kimarite_detail('oshidashi')
-    print(kimarite_detail.records[10])
-    print(kimarite_detail.total)
-    print(len(kimarite_detail.records))
+    # kimarite_detail = api.get_kimarite_detail('oshidashi')
+    # print(kimarite_detail.records[999])
+    # print(kimarite_detail.total)
+    # print(len(kimarite_detail.records))
 
+    # rikishi_matches = api.get_rikishi_matches(218)
+    # print(rikishi_matches)
+
+    # basho_banzuke = api.get_basho_banzuke(196011, 'Makuuchi')
+    # print(basho_banzuke)
+
+    ### ERROR
+    basho_torkikumi = api.get_basho_torikumi(196011, 'Makuuchi', 10)
+    print(basho_torkikumi)
 
     
 

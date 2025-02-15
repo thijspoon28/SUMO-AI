@@ -89,8 +89,8 @@ class BashoRikishi(BaseModel):
 class SpecialPrize(BaseModel):
     type: str
     rikishiId: int
-    shikonaEn: str
-    shikonaJp: str
+    shikonaEn: str | None = None
+    shikonaJp: str | None = None
 
 
 class BashoBanzukeRikishiRecord(BaseModel):
@@ -104,8 +104,8 @@ class BashoBanzukeRikishiRecord(BaseModel):
 class TorikumiYusho(BaseModel):
     type: str
     rikishiId: int
-    shikonaEn: str
-    shikonaJp: str
+    shikonaEn: str | None = None
+    shikonaJp: str | None = None
 
 
 class Kimarite(BaseModel):
