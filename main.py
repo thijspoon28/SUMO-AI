@@ -7,7 +7,7 @@ from database.session import init_db
 
 def main():
     init_db(delete=True)
-    for i in estimate_iterable(range(2010, 2025)):
+    for i in estimate_iterable(range(2010, 2025), prefix="<===>"):
         for j in range(1, 12, 2):
             basho_id = f"{i}{j:0>{2}}"
             print(basho_id)

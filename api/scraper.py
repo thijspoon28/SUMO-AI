@@ -9,7 +9,7 @@ import api.schemas as schema
 
 
 
-def estimate_iterable(iterable, interval: int = 1):
+def estimate_iterable(iterable, interval: int = 1, prefix: str = ">"):
     start = time.time()
     prev = time.time()
     cycles = -1
@@ -33,7 +33,7 @@ def estimate_iterable(iterable, interval: int = 1):
 
         if x % interval == 0:
             x = 0
-            print(f"Cycle {cycles}: elapsed={spent:.2f}s, total={cur-start:.2f}s, estimate={estimate}", end='')
+            print(f"{prefix} Cycle {cycles}: elapsed={spent:.2f}s, total={cur-start:.2f}s, estimate={estimate}", end='')
 
         x += 1
 
@@ -129,7 +129,7 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
 
     rikishis: list[BashoBanzukeRikishi] = basho_benzuke.east + basho_benzuke.west
 
-    for banzuke_rikishi in estimate_iterable(rikishis, 10):
+    for banzuke_rikishi in estimate_iterable(rikishis, 1):
         r = find_rikishi(banzuke_rikishi.rikishiID)
 
         if r is None:
