@@ -18,6 +18,8 @@ def estimate_iterable(iterable, interval: int = 1, prefix: str = ">"):
 
     x = 0
 
+    print(f"{prefix} Started iterating - {maximum} items")
+
     for i in iterable:
         yield i
         
@@ -33,10 +35,9 @@ def estimate_iterable(iterable, interval: int = 1, prefix: str = ">"):
 
         if x % interval == 0:
             x = 0
-            print(f"{prefix} Cycle {cycles}: elapsed={spent:.2f}s, total={cur-start:.2f}s, estimate={estimate}", end='')
+            print(f"{prefix} Cycle {cycles}: elapsed={spent:.2f}s, total={cur-start:.2f}s, estimate={estimate}")
 
         x += 1
-
 
 
 def display_state(info: str, start_time: float, count: int) -> None:
