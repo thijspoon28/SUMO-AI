@@ -162,11 +162,16 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
             rikishi_matches = api.get_rikishi_versus(
                 r.id,
                 match_.opponentID,
-                basho_id,
+                # basho_id,
                 # scrape=True,
             )
 
             for rm in rikishi_matches.matches:
+                if (
+                    find_match(rm.bashoId, rm.division, rm.eastId, rm.westId)
+                    is not None
+                ):
+                    continue
                 new = Match(
                     basho_id=rm.bashoId,
                     division=division,
