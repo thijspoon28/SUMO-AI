@@ -2,31 +2,39 @@ import pandas as pd
 # from api.enums import Division
 # from api.scraper import estimate_iterable, scrape_basho
 
+from api.sumo import SumoAPI
 from database.queries import DfQueries
 from database.session import init_db
+from utils.columns import count_kimarite
 from utils.parsing import sumo_rank_to_value
 
 
 def main():
     init_db(delete=False)
 
-    df = DfQueries.basho_matches()
-    df = df.drop('day', axis=1)
-    df = df.drop('match_no', axis=1)
-    df = df.drop('division', axis=1)
-    df = df.drop('kimarite', axis=1)
-    df = df.drop('east_weight', axis=1)
-    df = df.drop('east_height', axis=1)
-    df = df.drop('west_weight', axis=1)
-    df = df.drop('west_height', axis=1)
-    df = df.drop('winner_jp', axis=1)
+    df1 = DfQueries.rikishis()
+    df2 = DfQueries.matches()
 
-    df["east_rank_value"] = df["east_rank"].apply(sumo_rank_to_value)
-    df["west_rank_value"] = df["west_rank"].apply(sumo_rank_to_value)
+    df = count_kimarite(df1, df2)
+    print(df)
+
+    # api = SumoAPI()
+    # print(api.get_kimarite())
+
+    # df = df.drop('day', axis=1)
+    # df = df.drop('match_no', axis=1)
+    # df = df.drop('division', axis=1)
+    # df = df.drop('kimarite', axis=1)
+    # df = df.drop('east_weight', axis=1)
+    # df = df.drop('east_height', axis=1)
+    # df = df.drop('west_weight', axis=1)
+    # df = df.drop('west_height', axis=1)
+    # df = df.drop('winner_jp', axis=1)
+
+    # df["east_rank_value"] = df["east_rank"].apply(sumo_rank_to_value)
+    # df["west_rank_value"] = df["west_rank"].apply(sumo_rank_to_value)
 
     # df = df.loc[df["east_rank_value"] > 9990]
-
-    print(df)
     # print(df.to_string())
 
 

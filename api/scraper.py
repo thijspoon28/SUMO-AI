@@ -125,6 +125,9 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
         count += 1
         session.add(basho_model)
 
+    # Empty kimarite filler
+    common_kimarite = api.get_kimarite().records[-1]
+
     yusho = {yu.rikishiId: yu.type for yu in basho.yusho}
     special_prize = {sp.rikishiId: sp.type for sp in basho.specialPrizes}
 
@@ -147,7 +150,6 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
             session.add(rik_bas)
 
             count += 2
-            # display_state(f"Added Rikishi({r.id})", start_time, count)
 
         for match_ in banzuke_rikishi.record:
             if match_.opponentID == 0:
@@ -183,7 +185,7 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
                     west_id=rm.westId,
                     west_shikona=rm.westShikona,
                     west_rank=rm.westRank,
-                    kimarite=rm.kimarite,
+                    kimarite=rm.kimarite if rm.kimarite != "" else common_kimarite.kimarite,
                     winner_id=rm.winnerId,
                     winner_en=rm.winnerEn,
                     winner_jp=rm.winnerJp,
@@ -191,7 +193,6 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
                 session.add(new)
 
                 count += 1
-                # display_state("Added match", start_time, count)
 
         session.commit()
 
