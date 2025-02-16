@@ -1,7 +1,7 @@
 import time
 from api.schemas import BashoBanzukeRikishi
 from database.models import Basho, Match, Rikishi, RikishiBasho
-from database.queries import find_basho, find_match, find_rikishi
+from database.queries import Repo
 from database.session import get_session
 from api.enums import Division
 from api.sumo import SumoAPI
@@ -114,7 +114,7 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
 
     count = 0
 
-    basho_model = find_basho(basho_id)
+    basho_model = Repo.find_basho(basho_id)
     if basho_model is None:
         basho_model = Basho(
             id=basho_id,
@@ -131,7 +131,7 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
     rikishis: list[BashoBanzukeRikishi] = basho_benzuke.east + basho_benzuke.west
 
     for banzuke_rikishi in estimate_iterable(rikishis, 1):
-        r = find_rikishi(banzuke_rikishi.rikishiID)
+        r = Repo.find_rikishi(banzuke_rikishi.rikishiID)
 
         if r is None:
             r = scramble_rikishi(banzuke_rikishi.rikishiID)
@@ -154,7 +154,7 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
                 continue
 
             if (
-                find_match(basho_id, division, r.id, match_.opponentID)
+                Repo.find_match(basho_id, division, r.id, match_.opponentID)
                 is not None
             ):
                 continue
@@ -168,7 +168,7 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
 
             for rm in rikishi_matches.matches:
                 if (
-                    find_match(rm.bashoId, rm.division, rm.eastId, rm.westId)
+                    Repo.find_match(rm.bashoId, rm.division, rm.eastId, rm.westId)
                     is not None
                 ):
                     continue
