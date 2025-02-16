@@ -5,14 +5,22 @@ import pandas as pd
 from api.sumo import SumoAPI
 from database.queries import DfQueries
 from database.session import init_db
+from utils.columns import count_kimarite
 from utils.parsing import sumo_rank_to_value
 
 
 def main():
     init_db(delete=False)
 
-    df1 = DfQueries.basho_matches()
+    df1 = DfQueries.rikishis()
     df2 = DfQueries.matches()
+
+    df = count_kimarite(df1, df2)
+    print(df)
+
+    # api = SumoAPI()
+    # print(api.get_kimarite())
+
     # df = df.drop('day', axis=1)
     # df = df.drop('match_no', axis=1)
     # df = df.drop('division', axis=1)

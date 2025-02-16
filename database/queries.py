@@ -46,12 +46,33 @@ class Repo:
 
 
 class DfQueries:
+    def rikishis() -> pd.DataFrame:
+        session = get_session()
+
+        query = session.query(Rikishi)
+
+        compiled_query = query.statement.compile(
+            dialect=session.bind.dialect,
+            compile_kwargs={"literal_binds": True},
+        )
+
+        df = pd.read_sql(text(str(compiled_query)), session.bind)
+        session.close()
+        return df
+    
     def matches() -> pd.DataFrame:
         session = get_session()
 
         query = session.query(Match)
+        
+        compiled_query = query.statement.compile(
+            dialect=session.bind.dialect,
+            compile_kwargs={"literal_binds": True},
+        )
 
-        df = pd.read_sql(query, con=session.get_bind())
+        df = pd.read_sql(text(str(compiled_query)), session.bind)
+        session.close()
+        return df
 
     def basho_matches() -> pd.DataFrame:
         session = get_session()
@@ -89,7 +110,8 @@ class DfQueries:
         )
 
         compiled_query = query.statement.compile(
-            dialect=session.bind.dialect, compile_kwargs={"literal_binds": True}
+            dialect=session.bind.dialect,
+            compile_kwargs={"literal_binds": True},
         )
 
         df = pd.read_sql(text(str(compiled_query)), session.bind)
@@ -118,7 +140,8 @@ class DfQueries:
         )
 
         compiled_query = query.statement.compile(
-            dialect=session.bind.dialect, compile_kwargs={"literal_binds": True}
+            dialect=session.bind.dialect,
+            compile_kwargs={"literal_binds": True},
         )
 
         df = pd.read_sql(text(str(compiled_query)), session.bind)
