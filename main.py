@@ -6,12 +6,12 @@ from database.session import init_db
 
 
 def main():
-    init_db(delete=True)
+    init_db(delete=False)
     for i in estimate_iterable(range(2010, 2025), prefix="<===>"):
         for j in range(1, 12, 2):
             basho_id = f"{i}{j:0>{2}}"
             print(basho_id)
-            if basho_id == 201103 or basho_id == 202007:
+            if basho_id == '201103' or basho_id == '202005':
                 continue
             scrape_basho(basho_id, Division.Makuuchi.value)
 

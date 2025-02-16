@@ -1,5 +1,18 @@
 # Custom
+.vscode/
 *.db
+*.bat
+*.exp
+*.pdb
+*.dll
+*.a
+*.so
+*.db-shm
+*.db-wal
+package-lock.json
+*.sqlite
+node_modules/
+build/
 
 
 # Byte-compiled / optimized / DLL files
