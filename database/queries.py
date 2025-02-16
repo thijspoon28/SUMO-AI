@@ -44,10 +44,18 @@ class Repo:
         session.close()
         return result
 
+
 class DfQueries:
+    def matches() -> pd.DataFrame:
+        session = get_session()
+
+        query = session.query(Match)
+
+        df = pd.read_sql(query, con=session.get_bind())
+
     def basho_matches() -> pd.DataFrame:
         session = get_session()
-        
+
         east_rikishi = aliased(Rikishi)
         west_rikishi = aliased(Rikishi)
 
@@ -57,24 +65,20 @@ class DfQueries:
                 # Basho.date.label("basho_date"),
                 # Basho.start_date,
                 # Basho.end_date,
-
                 Match.day,
                 Match.match_no,
                 Match.division,
                 Match.kimarite,
-
                 Match.east_id.label("east_rikishi_id"),
                 Match.east_shikona,
                 Match.east_rank,
                 east_rikishi.weight.label("east_weight"),
                 east_rikishi.height.label("east_height"),
-
                 Match.west_id.label("west_rikishi_id"),
                 Match.west_shikona,
                 Match.west_rank,
                 west_rikishi.weight.label("west_weight"),
                 west_rikishi.height.label("west_height"),
-
                 Match.winner_id,
                 Match.winner_en,
                 Match.winner_jp,
@@ -85,15 +89,14 @@ class DfQueries:
         )
 
         compiled_query = query.statement.compile(
-            dialect=session.bind.dialect,  
-            compile_kwargs={"literal_binds": True}  
+            dialect=session.bind.dialect, compile_kwargs={"literal_binds": True}
         )
 
         df = pd.read_sql(text(str(compiled_query)), session.bind)
 
         session.close()
         return df
-    
+
     def basho_rikishi() -> pd.DataFrame:
         session = get_session()
 
@@ -103,26 +106,22 @@ class DfQueries:
                 # Basho.date.label("basho_date"),
                 # Basho.start_date,
                 # Basho.end_date,
-
                 RikishiBasho.rikishi_id,
                 Rikishi.shikona_en.label("rikishi_shikona"),
                 Rikishi.height.label("rikishi_height"),
                 Rikishi.weight.label("rikishi_weight"),
-
                 RikishiBasho.special_prize,
-                RikishiBasho.yusho
+                RikishiBasho.yusho,
             )
             .join(RikishiBasho, RikishiBasho.basho_id == Basho.id)
             .join(Rikishi, Rikishi.id == RikishiBasho.rikishi_id)
         )
 
         compiled_query = query.statement.compile(
-            dialect=session.bind.dialect,  
-            compile_kwargs={"literal_binds": True}  
+            dialect=session.bind.dialect, compile_kwargs={"literal_binds": True}
         )
 
         df = pd.read_sql(text(str(compiled_query)), session.bind)
 
         session.close()
         return df
-
