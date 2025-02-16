@@ -64,14 +64,14 @@ class DfQueries:
                 Match.kimarite,
 
                 Match.east_id.label("east_rikishi_id"),
-                east_rikishi.shikona_en.label("east_shikona"),
-                east_rikishi.current_rank.label("east_rank"),
+                Match.east_shikona,
+                Match.east_rank,
                 east_rikishi.weight.label("east_weight"),
                 east_rikishi.height.label("east_height"),
 
                 Match.west_id.label("west_rikishi_id"),
-                west_rikishi.shikona_en.label("west_shikona"),
-                west_rikishi.current_rank.label("west_rank"),
+                Match.west_shikona,
+                Match.west_rank,
                 west_rikishi.weight.label("west_weight"),
                 west_rikishi.height.label("west_height"),
 
