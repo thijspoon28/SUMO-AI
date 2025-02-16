@@ -10,7 +10,7 @@ from database.session import init_db
 def main():
     init_db(delete=False)
 
-    df = DfQueries.basho_rikishi()
+    df = DfQueries.basho_matches()
     # print(df.loc[df["special_prize"].notna()])
     print(df)
 

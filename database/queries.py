@@ -54,9 +54,9 @@ class DfQueries:
         query = (
             session.query(
                 Basho.id.label("basho_id"),
-                Basho.date.label("basho_date"),
-                Basho.start_date,
-                Basho.end_date,
+                # Basho.date.label("basho_date"),
+                # Basho.start_date,
+                # Basho.end_date,
 
                 Match.day,
                 Match.match_no,
