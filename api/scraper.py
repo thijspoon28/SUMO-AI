@@ -6,11 +6,7 @@ from database.session import get_session
 from api.enums import Division
 from api.sumo import SumoAPI
 import api.schemas as schema
-
-
-def display_state(info: str, start_time: float, count: int) -> None:
-    cur_time = time.time()
-    print(f"> {info} - elapsed={cur_time - start_time:.2f}s - record={count}")
+from utils.estimate import estimate
 
 
 def scramble_rikishi(rikishi_id: int) -> Rikishi:
@@ -101,7 +97,7 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
 
     rikishis: list[BashoBanzukeRikishi] = basho_benzuke.east + basho_benzuke.west
 
-    for banzuke_rikishi in estimate_iterable(rikishis, 1):
+    for banzuke_rikishi in estimate(rikishis, title="Rikishi"):
         r = Repo.find_rikishi(banzuke_rikishi.rikishiID)
 
         if r is None:
@@ -163,8 +159,6 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
                 count += 1
 
         session.commit()
-
-    display_state("Finished scrape", start_time, count)
 
 
 def scrape_all(limit: int | None = None):

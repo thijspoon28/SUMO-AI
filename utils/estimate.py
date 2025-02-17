@@ -1,67 +1,186 @@
+from collections.abc import Callable, Iterable
+import datetime
+import os
 import time
+import sys
 
 
 class Estimator:
-    def __init__(self):
-        pass
+    def __init__(
+        self,
+        level: int,
+        title: str,
+        size: os.terminal_size,
+        iteratable: Iterable,
+        finish_callback: Callable,
+        estimator_id: int,
+    ):
+        self.level = level
+        self.title = title
+        self.size = size
 
-    def iterate(self, iterable):
-        start = time.time()
-        prev = time.time()
-        cycles = -1
-        avg = 0
-        maximum = len(iterable)
+        self.iteration = 0
+        self.iteratable = iteratable
+        self.total = len(iteratable)
 
-        x = 0
+        self.start_time = time.time()
+        self.times = [self.start_time]
+        self.avg = 0
 
-        print(f"{prefix} Started iterating - {maximum} items")
+        self.finish_callback = finish_callback
+        self.estimator_id = estimator_id
 
-        for i in iterable:
-            yield i
-            
-            cycles += 1
+    def __repr__(self):
+        return f'Estimator("{self.title}", level={self.level})'
 
-            cur = time.time()
-            spent = cur-prev
-            prev = cur
+    def finish(self) -> None:
+        self.finish_callback(self.estimator_id)
 
-            avg = ((avg * (cycles-1)) + spent) / cycles if cycles > 0 else 0
+    def move(self, x: int, y: int) -> None:
+        if x < 1 or y < 1 or x > self.size.columns or y > self.size.lines:
+            raise Exception(
+                f"Moved out of bounds: x[1:{self.size.columns}], y[1:{self.size.lines}]: ({x}, {y})"
+            )
+        sys.stdout.write(f"\033[{y};{x}H")
+        sys.stdout.flush()
 
-            estimate = f"{(maximum) * avg:.2f}s"
+    def clear_line(self):
+        sys.stdout.write("\033[K")
 
-            print(f"{prefix} Cycle {cycles}: elapsed={spent:.2f}s, total={cur-start:.2f}s, estimate={estimate}")
+    def print_start(self) -> None:
+        spacing = "  " * self.level
 
-            x += 1
+        completion = f"0 / {self.total} (  0.0%)"
+        line = f"{spacing}> {self.title} - {completion} - total=0.0s - last=Unknown"
 
-estimator = Estimator()
+        self.move(1, self.level + 1)
 
+        sys.stdout.write(line)
+        sys.stdout.flush()
 
-def estimate_iterable(iterable, interval: int = 1, prefix: str = ">"):
-    start = time.time()
-    prev = time.time()
-    cycles = -1
-    avg = 0
-    maximum = len(iterable)
+        self.ready_next_line()
 
-    x = 0
-
-    print(f"{prefix} Started iterating - {maximum} items")
-
-    for i in iterable:
-        yield i
-        
-        cycles += 1
-
+    def print_stats(self) -> None:
         cur = time.time()
-        spent = cur-prev
-        prev = cur
+        total = cur - self.start_time
+        last = cur - self.times[-1]
 
-        avg = ((avg * (cycles-1)) + spent) / cycles if cycles > 0 else 0
+        self.times.append(cur)
 
-        estimate = f"{(maximum) * avg:.2f}s"
+        precent = self.iteration / self.total * 100
 
-        if x % interval == 0:
-            x = 0
-            print(f"{prefix} Cycle {cycles}: elapsed={spent:.2f}s, total={cur-start:.2f}s, estimate={estimate}")
+        # "  " 2 (empty spaces) + "> " + (title length)
+        spacing = (2 * self.level) + 2 + len(self.title) + 4
+        completion = f"{self.iteration} / {self.total} ({precent:5.1f}%)"
 
-        x += 1
+        estimate = self.calculate_estimate(cur, last)
+
+        line = f"{completion} - {total=:.2f}s - {last=:.2f}s - estimate={estimate}"
+
+        self.move(spacing, self.level + 1)
+        self.clear_line()
+
+        sys.stdout.write(line)
+        sys.stdout.flush()
+
+        self.ready_next_line()
+    
+    def ready_next_line(self) -> None:
+        self.move(1, self.level + 2)
+
+    def calculate_estimate(self, cur: float, last: float) -> str:
+        times = self.times[-5:]
+
+        if len(times) > 1:
+            diffs = (times[i] - times[i - 1] for i in range(1, len(times)))
+            avg_diff = sum(diffs) / (len(times) - 1)
+        else:
+            avg_diff = 0
+
+        linear_estimation = self.start_time + avg_diff * self.total
+
+        self.avg = ((self.avg * (self.iteration - 1)) + last) / self.iteration
+        estimated_total = self.total * self.avg
+        avg_estimation = self.start_time + estimated_total
+
+        linear_weight = 1
+        avg_weight = 1
+
+        weighted_linear = linear_estimation * linear_weight
+        weighted_avg = avg_estimation * avg_weight
+
+        total = linear_weight + avg_weight
+        estimation = (weighted_linear + weighted_avg) / total
+
+        dt = datetime.datetime.fromtimestamp(estimation)
+        return dt.strftime("%H:%M:%S")
+
+    def iterate(self):
+        self.print_start()
+
+        for idx, i in enumerate(self.iteratable):
+            self.iteration += 1
+            yield i
+            self.print_stats()
+
+        self.finish()
+
+
+class EstimatorManager:
+    def __init__(self):
+        self.estimators: dict[int, Estimator] = {}
+        self.count = 0
+        self.size = os.get_terminal_size()
+
+        self.cleared = False
+
+    def clear(self):
+        sys.stdout.write("\n" * self.size.lines)
+        sys.stdout.flush()
+        self.move(1, 1)
+
+    def move(self, x: int, y: int) -> None:
+        if x < 1 or y < 1 or x > self.size.columns or y > self.size.lines:
+            raise Exception(
+                f"Moved out of bounds: x[1:{self.size.columns}], y[1:{self.size.lines}]: ({x}, {y})"
+            )
+        sys.stdout.write(f"\033[{y};{x}H")
+        sys.stdout.flush()
+
+    def add(self, estimator_id: int, estimator: Estimator) -> None:
+        self.estimators[estimator_id] = estimator
+
+    def remove(self, estimator_id: int) -> None:
+        del self.estimators[estimator_id]
+
+    def finish(self, estimator_id: int) -> None:
+        self.remove(estimator_id)
+
+        if len(self.estimators) == 0:
+            self.move(1, self.size.lines)
+
+    def estimate(self, iteratable: Iterable, title: str = "Loop"):
+        self.count += 1
+
+        estimator = Estimator(
+            level=len(self.estimators),
+            size=self.size,
+            title=title,
+            iteratable=iteratable,
+            finish_callback=self.finish,
+            estimator_id=self.count,
+        )
+
+        if len(self.estimators) == 0:
+            self.clear()
+
+        self.add(self.count, estimator)
+
+        return estimator.iterate()
+
+
+manager = EstimatorManager()
+
+
+def estimate(iterable: Iterable, title: str = "Loop"):
+    return manager.estimate(iterable, title=title)
