@@ -5,32 +5,36 @@ from sqlalchemy.orm import relationship, declarative_base, Mapped
 Base = declarative_base()
 
 
-class Measurement(Base):
+class Measurement(Base):  # type: ignore
     __tablename__ = "measurement"
+
     basho_id = Column(String, ForeignKey("basho.id"), primary_key=True)
     rikishi_id = Column(Integer, ForeignKey("rikishi.id"), primary_key=True)
     height = Column(Float, nullable=False)
     weight = Column(Float, nullable=False)
 
 
-class Rank(Base):
+class Rank(Base):  # type: ignore
     __tablename__ = "rank"
+
     basho_id = Column(String, ForeignKey("basho.id"), primary_key=True)
     rikishi_id = Column(Integer, ForeignKey("rikishi.id"), primary_key=True)
     rank_value = Column(Integer, nullable=False)
     rank = Column(String, nullable=False)
 
 
-class Shikona(Base):
+class Shikona(Base):  # type: ignore
     __tablename__ = "shikona"
+
     basho_id = Column(String, ForeignKey("basho.id"), primary_key=True)
     rikishi_id = Column(Integer, ForeignKey("rikishi.id"), primary_key=True)
     shikona_en = Column(String, nullable=False)
     shikona_jp = Column(String, nullable=False)
 
 
-class Match(Base):
+class Match(Base):  # type: ignore
     __tablename__ = "match"
+
     basho_id = Column(String, ForeignKey("basho.id"), nullable=False, primary_key=True)
     division = Column(String, nullable=False)
     day = Column(Integer, primary_key=True)
@@ -55,8 +59,9 @@ class Match(Base):
         return f"{self.basho_id}-{self.day}-{self.east_id}-{self.west_id}"
 
 
-class Rikishi(Base):
+class Rikishi(Base):  # type: ignore
     __tablename__ = "rikishi"
+
     id = Column(Integer, primary_key=True)
     sumodb_id = Column(Integer, nullable=True)
     nsk_id = Column(Integer, nullable=False)
@@ -99,8 +104,9 @@ class Rikishi(Base):
     west_matches = relationship("Match", foreign_keys="[Match.west_id]", back_populates="west_rikishi")
 
 
-class Basho(Base):
+class Basho(Base):  # type: ignore
     __tablename__ = "basho"
+
     id = Column(String, primary_key=True)
     date = Column(String, nullable=False)
     start_date = Column(DateTime, nullable=False)
@@ -112,8 +118,9 @@ class Basho(Base):
     matches = relationship(Match, back_populates="basho")
 
 
-class RikishiBasho(Base):
+class RikishiBasho(Base):  # type: ignore
     __tablename__ = "rikishi_basho"
+
     rikishi_id = Column(Integer, ForeignKey("rikishi.id"), primary_key=True)
     basho_id = Column(String, ForeignKey("basho.id"), primary_key=True)
     special_prize = Column(String, nullable=True)

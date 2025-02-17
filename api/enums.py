@@ -11,6 +11,6 @@ class Division(str, enum.Enum):
 
 
 class SortFields(str, enum.Enum):
-    count = "count"
+    count = "count"  # type: ignore
     kimarite = "kimarite"
     lastUsage = "lastUsage"

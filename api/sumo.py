@@ -1,6 +1,7 @@
 import time
+from typing import Any, Type, TypeVar, overload
 from pydantic import BaseModel
-import requests
+import requests  # type: ignore
 
 from api.enums import Division, SortFields
 from api.schemas import (
@@ -20,16 +21,40 @@ from api.schemas import (
 )
 
 
+T = TypeVar("T", bound=BaseModel)
+
+
 class SumoAPI:
     BASE_URL = "https://www.sumo-api.com"
 
+    @overload
+    @classmethod
     def request(
         cls,
         url: str,
         *,
+        schema: Type[T],
+        params: dict | None = None
+    ) -> T: ...
+
+    @overload
+    @classmethod
+    def request(
+        cls,
+        url: str,
+        *,
+        schema: None = None,
+        params: dict | None = None
+    ) -> dict: ...
+
+    @classmethod
+    def request(
+        cls,
+        url: str,
+        *,
+        schema: Type[T] | None = None,
         params: dict | None = None,
-        schema: BaseModel | None = None,
-    ) -> BaseModel | dict:
+    ) -> T | dict:
         response = requests.get(url, params=params)
 
         try:
@@ -41,15 +66,14 @@ class SumoAPI:
             print(response.text)
             raise Exception("API SOILED ITSELF (it's probably down)") from exc
 
-        if schema:
-            result = schema(**data)
-
-            return result
-
-        else:
+        if not schema:
             return data
+        
+        result = schema(**data)
 
-    def scrape(cls, url: str, params: dict, schema: BaseModel) -> BaseModel:
+        return result
+
+    def scrape(cls, url: str, params: dict, schema: Type[T]) -> T:
         if params.get("skip") is None:
             params["skip"] = 0
         if params.get("limit") is None:
@@ -63,7 +87,7 @@ class SumoAPI:
         start = time.time()
         prev = time.time()
 
-        avg = 0
+        avg = 0.0
 
         while True:
             cycles += 1
@@ -72,13 +96,13 @@ class SumoAPI:
             avg = ((avg * (cycles-1)) + spent) / cycles if cycles > 0 else 0
 
             total = 0
-            maximum = "Unknown"
+            maximum: str | int = "Unknown"
             estimate = "Unknown"
 
             if result is not None:
                 total = len(result.records)
                 maximum = result.total
-                estimate = f"{(maximum // 1000 + 2) * avg:.2f}s"
+                estimate = f"{(int(maximum) // 1000 + 2) * avg:.2f}s"
 
             print(f"Cycle {cycles}: elapsed={spent:.2f}s, total={cur-start:.2f}s, records={total} / {maximum}, estimate={estimate}")
 
@@ -101,6 +125,10 @@ class SumoAPI:
         cur = time.time()
         total = len(result.records) if result is not None else 0
         print(f">- Finished scrape cycles={cycles}, time={cur-start:.2f}s, records={total} -<")
+        
+        if result is None:
+            raise Exception("Ahw shit")
+        
         return result
 
     def get_rikishis(
@@ -136,7 +164,7 @@ class SumoAPI:
         """
 
         url = f"{cls.BASE_URL}/api/rikishis"
-        params = {}
+        params: dict[str, Any] = {}
         
         params["intai"] = True
 
@@ -169,9 +197,9 @@ class SumoAPI:
     def get_rikishi(
         cls,
         rikishi_id: int,
-        measurements: bool = None,
-        ranks: bool = None,
-        shikonas: bool = None,
+        measurements: bool | None = None,
+        ranks: bool | None = None,
+        shikonas: bool | None = None,
     ) -> Rikishi:
         """Returns a single rikishi by id
 
@@ -185,7 +213,7 @@ class SumoAPI:
             Rikishi:
         """
         url = f"{cls.BASE_URL}/api/rikishi/{rikishi_id}"
-        params = {}
+        params: dict[str, Any] = {}
         
         params["intai"] = True
 
@@ -231,7 +259,7 @@ class SumoAPI:
             RikishiStats:
         """
         url = f"{cls.BASE_URL}/api/rikishi/{rikishi_id}/matches"
-        params = {}
+        params: dict[str, Any] = {}
 
         if basho_id is not None:
             params["bashoId"] = basho_id
@@ -265,7 +293,7 @@ class SumoAPI:
             RikishiVersus:
         """
         url = f"{cls.BASE_URL}/api/rikishi/{rikishi_id}/matches/{opponent_id}"
-        params = {}
+        params: dict[str, Any] = {}
 
         if basho_id is not None:
             params["bashoId"] = basho_id
@@ -316,7 +344,7 @@ class SumoAPI:
         division_value = division.value if isinstance(division, Division) else division
 
         url = f"{cls.BASE_URL}/api/basho/{basho_id}/banzuke/{division_value}"
-        params = {}
+        params: dict[str, Any] = {}
 
         if limit:
             params["limit"] = min(limit, 1000)
@@ -351,7 +379,7 @@ class SumoAPI:
         division_value = division.value if isinstance(division, Division) else division
 
         url = f"{cls.BASE_URL}/api/basho/{basho_id}/torikumi/{division_value}/{day}"
-        params = {}
+        params: dict[str, Any] = {}
 
         if limit:
             params["limit"] = min(limit, 1000)
@@ -385,7 +413,7 @@ class SumoAPI:
         """
 
         url = f"{cls.BASE_URL}/api/kimarite"
-        params = {}
+        params: dict[str, Any] = {}
 
         params["sortField"] = sortField
         params["sortOrder"] = "asc" if ascending else "desc"
@@ -421,7 +449,7 @@ class SumoAPI:
             KimariteMatches:
         """
         url = f"{cls.BASE_URL}/api/kimarite/{kimarite}"
-        params = {}
+        params: dict[str, Any] = {}
 
         params["sortOrder"] = "asc" if ascending else "desc"
 
@@ -442,7 +470,7 @@ class SumoAPI:
         ascending: bool = True,
         limit: int | None = None,
         skip: int | None = None,
-        scrape: bool = False,
+        # scrape: bool = False,
     ) -> list[Measurement]:
         """Returns measurement changes by rikishi or basho
         NOTE: the sort order is by basho, default descending order.
@@ -458,7 +486,7 @@ class SumoAPI:
             list[Measurement]:
         """
         url = f"{cls.BASE_URL}/api/measurements"
-        params = {}
+        params: dict[str, Any] = {}
 
         # params["sortOrder"] = "asc" if ascending else "desc"
 
@@ -471,8 +499,8 @@ class SumoAPI:
         if skip:
             params["skip"] = skip
 
-        if scrape:
-            return cls.scrape(url, params=params)
+        # if scrape:
+        #     return cls.scrape(url, params=params)
 
         data = cls.request(url, params=params)
         return [Measurement(**d) for d in data]
@@ -484,7 +512,7 @@ class SumoAPI:
         # ascending: bool = True,
         limit: int | None = None,
         skip: int | None = None,
-        scrape: bool = False,
+        # scrape: bool = False,
     ) -> list[Rank]:
         """Returns rank changes by rikishi or basho
         NOTE: the sort order is by basho, default descending order.
@@ -500,7 +528,7 @@ class SumoAPI:
             list[Rank]:
         """
         url = f"{cls.BASE_URL}/api/ranks"
-        params = {}
+        params: dict[str, Any] = {}
 
         # params["sortOrder"] = "asc" if ascending else "desc"
 
@@ -516,8 +544,8 @@ class SumoAPI:
         if not rikishi_id and not basho_id:
             raise ValueError("Provide 'rikishi_id', 'basho_id' or both")
 
-        if scrape:
-            return cls.scrape(url, params=params)
+        # if scrape:
+        #     return cls.scrape(url, params=params)
 
         data = cls.request(url, params=params)
         return [Rank(**d) for d in data]
@@ -529,7 +557,7 @@ class SumoAPI:
         # ascending: bool = True,
         limit: int | None = None,
         skip: int | None = None,
-        scrape: bool = False,
+        # scrape: bool = False,
     ) -> list[Shikona]:
         """Returns shikona changes by rikishi or basho
         NOTE: the sort order is by basho, default descending order.
@@ -545,7 +573,7 @@ class SumoAPI:
             list[Shikona]:
         """
         url = f"{cls.BASE_URL}/api/shikonas"
-        params = {}
+        params: dict[str, Any] = {}
 
         # params["sortOrder"] = "asc" if ascending else "desc"
 
@@ -558,8 +586,8 @@ class SumoAPI:
         if skip:
             params["skip"] = skip
 
-        if scrape:
-            return cls.scrape(url, params=params)
+        # if scrape:
+        #     return cls.scrape(url, params=params)
 
         data = cls.request(url, params=params)
         return [Shikona(**d) for d in data]

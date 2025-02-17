@@ -90,10 +90,25 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
         session.add(basho_model)
 
     # Empty kimarite filler
-    common_kimarite = api.get_kimarite().records[-1]
+    kimarites = api.get_kimarite()
+
+    if not kimarites.records or len(kimarites.records) < 1:
+        raise Exception("No kimarites")
+    
+    common_kimarite = kimarites.records[-1]
+
+    if basho.yusho is None:
+        basho.yusho = []
+    if basho.specialPrizes is None:
+        basho.specialPrizes = []
 
     yusho = {yu.rikishiId: yu.type for yu in basho.yusho}
     special_prize = {sp.rikishiId: sp.type for sp in basho.specialPrizes}
+
+    if basho_benzuke.east is None:
+        basho_benzuke.east = []
+    if basho_benzuke.west is None:
+        basho_benzuke.west = []
 
     rikishis: list[BashoBanzukeRikishi] = basho_benzuke.east + basho_benzuke.west
 
@@ -106,8 +121,8 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
             rik_bas = RikishiBasho(
                 rikishi_id=r.id,
                 basho_id=basho_id,
-                special_prize=special_prize.get(r.id),
-                yusho=yusho.get(r.id),
+                special_prize=special_prize.get(int(r.id)),
+                yusho=yusho.get(int(r.id)),
             )
 
             session.add(r)
@@ -115,18 +130,21 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
 
             count += 2
 
+        if banzuke_rikishi.record is None:
+            banzuke_rikishi.record = []
+
         for match_ in banzuke_rikishi.record:
             if match_.opponentID == 0:
                 continue
 
             if (
-                Repo.find_match(basho_id, division, r.id, match_.opponentID)
+                Repo.find_match(basho_id, division, int(r.id), match_.opponentID)
                 is not None
             ):
                 continue
 
             rikishi_matches = api.get_rikishi_versus(
-                r.id,
+                int(r.id),
                 match_.opponentID,
                 # basho_id,
                 # scrape=True,
@@ -179,6 +197,9 @@ def scrape_all(limit: int | None = None):
     )
 
     rikishi_models: list[Rikishi] = []
+
+    if rikishis.records is None:
+        rikishis.records = []
 
     for rikishi in rikishis.records:
         r = scramble_rikishi(rikishi.id)

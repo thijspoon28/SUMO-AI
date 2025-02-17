@@ -2,11 +2,12 @@ from sqlalchemy import or_, select, text
 from sqlalchemy.orm import aliased
 from database.models import Basho, Match, Rikishi, RikishiBasho
 from database.session import get_session
-import pandas as pd
+import pandas as pd  # type: ignore
 
 
 class Repo:
-    def find_rikishi(rikishi_id: int) -> Basho | None:
+    @staticmethod
+    def find_rikishi(rikishi_id: int) -> Rikishi | None:
         session = get_session()
 
         query = select(Rikishi).where(Rikishi.id == rikishi_id)
@@ -15,6 +16,7 @@ class Repo:
         session.close()
         return result
 
+    @staticmethod
     def find_basho(basho_id: str) -> Basho | None:
         session = get_session()
 
@@ -24,6 +26,7 @@ class Repo:
         session.close()
         return result
 
+    @staticmethod
     def find_match(
         basho_id: str,
         division: str,
@@ -46,6 +49,7 @@ class Repo:
 
 
 class DfQueries:
+    @staticmethod
     def rikishis() -> pd.DataFrame:
         session = get_session()
 
@@ -60,6 +64,7 @@ class DfQueries:
         session.close()
         return df
     
+    @staticmethod
     def matches() -> pd.DataFrame:
         session = get_session()
 
@@ -74,6 +79,7 @@ class DfQueries:
         session.close()
         return df
 
+    @staticmethod
     def basho_matches() -> pd.DataFrame:
         session = get_session()
 
@@ -119,6 +125,7 @@ class DfQueries:
         session.close()
         return df
 
+    @staticmethod
     def basho_rikishi() -> pd.DataFrame:
         session = get_session()
 
