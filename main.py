@@ -15,8 +15,8 @@ def main():
     df1 = DfQueries.rikishis()
     df2 = DfQueries.matches()
 
-    df = count_kimarite(df1, df2)
-    print(df)
+    # df = count_kimarite(df1, df2)
+    # print(df[["id", "yorikiri_win", "yorikiri_loss"]].to_string())
 
     # api = SumoAPI()
     # print(api.get_kimarite())
@@ -30,12 +30,13 @@ def main():
     # df = df.drop('west_weight', axis=1)
     # df = df.drop('west_height', axis=1)
     # df = df.drop('winner_jp', axis=1)
+    df = DfQueries.basho_matches()
 
-    # df["east_rank_value"] = df["east_rank"].apply(sumo_rank_to_value)
-    # df["west_rank_value"] = df["west_rank"].apply(sumo_rank_to_value)
+    df["east_rank_value"] = df["east_rank"].apply(sumo_rank_to_value)
+    df["west_rank_value"] = df["west_rank"].apply(sumo_rank_to_value)
 
     # df = df.loc[df["east_rank_value"] > 9990]
-    # print(df.to_string())
+    print(df)
 
 
     # for i in estimate_iterable(range(2010, 2025), prefix="<===>"):
