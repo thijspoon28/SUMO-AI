@@ -16,6 +16,12 @@ pip install -r .\requirements.txt
 pip freeze > .\requirements.txt
 ```
 
+## Environment Variables
+
+Copy paste `env.example` and rename it to `.env`.
+
+Now edit the values as you desire.
+
 ## Meanings of words and stuff
 
 Basho: tournament

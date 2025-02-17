@@ -5,6 +5,15 @@ import time
 import sys
 
 
+def move(x: int, y: int, size: os.terminal_size) -> None:
+    if x < 1 or y < 2 or x > size.columns or y > size.lines:
+        msg = f"Moved out of bounds: x[1:{size.columns}], y[1:{size.lines}]: ({x}, {y})"
+        raise Exception(msg)
+
+    sys.stdout.write(f"\033[{y};{x}H")
+    sys.stdout.flush()
+
+
 class Estimator:
     def __init__(
         self,
@@ -37,30 +46,25 @@ class Estimator:
         self.finish_callback(self.estimator_id)
 
     def move(self, x: int, y: int) -> None:
-        if x < 1 or y < 1 or x > self.size.columns or y > self.size.lines:
-            raise Exception(
-                f"Moved out of bounds: x[1:{self.size.columns}], y[1:{self.size.lines}]: ({x}, {y})"
-            )
-        sys.stdout.write(f"\033[{y};{x}H")
-        sys.stdout.flush()
+        move(x, y, self.size)
 
     def clear_line(self):
         sys.stdout.write("\033[K")
 
-    def print_start(self) -> None:
+    def start(self) -> None:
         spacing = "  " * self.level
 
         completion = f"0 / {self.total} (  0.0%)"
         line = f"{spacing}> {self.title} - {completion} - total=0.0s - last=Unknown"
 
-        self.move(1, self.level + 1)
+        self.move(1, self.level + 2)
 
         sys.stdout.write(line)
         sys.stdout.flush()
 
         self.ready_next_line()
 
-    def print_stats(self) -> None:
+    def stats(self) -> None:
         cur = time.time()
         total = cur - self.start_time
         last = cur - self.times[-1]
@@ -69,26 +73,25 @@ class Estimator:
 
         precent = self.iteration / self.total * 100
 
-        # "  " 2 (empty spaces) + "> " + (title length)
         spacing = (2 * self.level) + 2 + len(self.title) + 4
         completion = f"{self.iteration} / {self.total} ({precent:5.1f}%)"
 
-        estimate = self.calculate_estimate(cur, last)
+        estimate = self.calculate_estimate(last)
 
         line = f"{completion} - {total=:.2f}s - {last=:.2f}s - estimate={estimate}"
 
-        self.move(spacing, self.level + 1)
+        self.move(spacing, self.level + 2)
         self.clear_line()
 
         sys.stdout.write(line)
         sys.stdout.flush()
 
         self.ready_next_line()
-    
-    def ready_next_line(self) -> None:
-        self.move(1, self.level + 2)
 
-    def calculate_estimate(self, cur: float, last: float) -> str:
+    def ready_next_line(self) -> None:
+        self.move(1, self.level + 3)
+
+    def calculate_estimate(self, last: float) -> str:
         times = self.times[-5:]
 
         if len(times) > 1:
@@ -116,12 +119,12 @@ class Estimator:
         return dt.strftime("%H:%M:%S")
 
     def iterate(self):
-        self.print_start()
+        self.start()
 
         for idx, i in enumerate(self.iteratable):
             self.iteration += 1
             yield i
-            self.print_stats()
+            self.stats()
 
         self.finish()
 
@@ -135,17 +138,12 @@ class EstimatorManager:
         self.cleared = False
 
     def clear(self):
-        sys.stdout.write("\n" * self.size.lines)
+        sys.stdout.write("\n" * (self.size.lines - 2))
         sys.stdout.flush()
-        self.move(1, 1)
+        self.move(1, 2)
 
     def move(self, x: int, y: int) -> None:
-        if x < 1 or y < 1 or x > self.size.columns or y > self.size.lines:
-            raise Exception(
-                f"Moved out of bounds: x[1:{self.size.columns}], y[1:{self.size.lines}]: ({x}, {y})"
-            )
-        sys.stdout.write(f"\033[{y};{x}H")
-        sys.stdout.flush()
+        move(x, y, self.size)
 
     def add(self, estimator_id: int, estimator: Estimator) -> None:
         self.estimators[estimator_id] = estimator
