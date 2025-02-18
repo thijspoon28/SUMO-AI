@@ -6,13 +6,19 @@ import sys
 from typing import TypeVar
 
 
-def move(x: int, y: int, size: os.terminal_size) -> None:
+def move(
+    sys_stdout_write: Callable,
+    sys_stdout_flush: Callable,
+    x: int,
+    y: int,
+    size: os.terminal_size,
+) -> None:
     if x < 1 or y < 2 or x > size.columns or y > size.lines:
-        msg = f"Moved out of bounds: x[1:{size.columns}], y[1:{size.lines}]: ({x}, {y})"
+        msg = f"Moved out of bounds: x[1:{size.columns}], y[2:{size.lines}]: ({x}, {y})"
         raise Exception(msg)
 
-    sys.stdout.write(f"\033[{y};{x}H")
-    sys.stdout.flush()
+    sys_stdout_write(f"\033[{y};{x}H")
+    sys_stdout_flush()
 
 
 class Estimator:
@@ -24,6 +30,10 @@ class Estimator:
         iteratable: Iterable,
         finish_callback: Callable,
         estimator_id: int,
+        sys_stdout_write: Callable,
+        sys_stdout_flush: Callable,
+        update_callback: Callable,
+        disable_terminal_chomp_chomp: bool
     ):
         self.level = level
         self.title = title
@@ -39,6 +49,11 @@ class Estimator:
 
         self.finish_callback = finish_callback
         self.estimator_id = estimator_id
+        self.sys_stdout_write = sys_stdout_write
+        self.sys_stdout_flush = sys_stdout_flush
+        self.update_callback = update_callback
+
+        self.disable_terminal_chomp_chomp = disable_terminal_chomp_chomp
 
     def __repr__(self):
         return f'Estimator("{self.title}", level={self.level})'
@@ -47,21 +62,34 @@ class Estimator:
         self.finish_callback(self.estimator_id)
 
     def move(self, x: int, y: int) -> None:
-        move(x, y, self.size)
-
+        if self.disable_terminal_chomp_chomp:
+            return 
+        
+        try:
+            move(self.sys_stdout_write, self.sys_stdout_flush, x, y, self.size)
+        except Exception:
+            raise Exception(self.disable_terminal_chomp_chomp)
+        
     def clear_line(self):
-        sys.stdout.write("\033[K")
+        if self.disable_terminal_chomp_chomp:
+            return 
+        
+        self.sys_stdout_write("\033[K")
 
     def start(self) -> None:
         spacing = "  " * self.level
 
         completion = f"0 / {self.total} (  0.0%)"
-        line = f"{spacing}> {self.title} - {completion} - total=0.0s - last=Unknown"
+        line = f"{spacing}> {self.title} - {completion} - total=0.0s - last=Unknown - estimate=Unknown"
 
+        if self.disable_terminal_chomp_chomp:
+            print(line)
+            return
+        
         self.move(1, self.level + 2)
 
-        sys.stdout.write(line)
-        sys.stdout.flush()
+        self.sys_stdout_write(line)
+        self.sys_stdout_flush()
 
         self.ready_next_line()
 
@@ -81,15 +109,22 @@ class Estimator:
 
         line = f"{completion} - {total=:.2f}s - {last=:.2f}s - estimate={estimate}"
 
+        if self.disable_terminal_chomp_chomp:
+            print(line)
+            return
+
         self.move(spacing, self.level + 2)
         self.clear_line()
 
-        sys.stdout.write(line)
-        sys.stdout.flush()
+        self.sys_stdout_write(line)
+        self.sys_stdout_flush()
 
         self.ready_next_line()
 
     def ready_next_line(self) -> None:
+        if self.disable_terminal_chomp_chomp:
+            return 
+        
         self.move(1, self.level + 3)
 
     def calculate_estimate(self, last: float) -> str:
@@ -124,8 +159,11 @@ class Estimator:
 
         for idx, i in enumerate(self.iteratable):
             self.iteration += 1
+            
             yield i
+
             self.stats()
+            self.update_callback()
 
         self.finish()
 
@@ -137,14 +175,95 @@ class EstimatorManager:
         self.size = os.get_terminal_size()
 
         self.cleared = False
+        self.sys_stdout_write = None
+        self.sys_stdout_flush = None
+
+        self.log: list[str] = [""]
+
+        self.disable_terminal_chomp_chomp_value = False
+        
+    def push_log(self, string: str | None = None, end: bool = False):
+        def split_string(s: str, length: int):
+            if len(s) == 0:
+                return [""]
+            return [s[i : i + length] for i in range(0, len(s), length)]
+
+        if end:
+            if not self.log[-1]:
+                return
+
+            self.log.append("")
+            return
+
+        if not isinstance(string, str):
+            raise ValueError("Only provide string input")
+
+        padding = 2
+
+        temp = self.log[-1] + string
+        temps = split_string(temp, self.size.columns - padding)
+
+        self.log[-1] = temps[0]
+
+        for t in temps[1:]:
+            self.log.append(t)
+
+        if len(self.log) - 1000 > 0:
+            for i in range(0, len(self.log) - 1000):
+                self.log.pop(i)
+
+    def print_log(self) -> None:
+        self.size = os.get_terminal_size()
+
+        levels = len(self.estimators)
+        amount = self.size.lines - levels - 2
+        logs = self.log[-amount:]
+
+        if len(self.log) > amount:
+            logs.insert(0, "...")
+
+        logs = ["  " + log for log in logs]
+
+        if len(logs) > 1:
+            logs[-2] = "> " + logs[-2][2:]
+
+        self.clear_mini_terminal()
+        self.move(1, self.size.lines - len(logs) + 1)
+
+        string = "\n".join(logs)
+
+        self.sys_stdout_write(string)
+        self.sys_stdout_flush()
+
+    def clear_mini_terminal(self) -> None:
+        levels = len(self.estimators)
+        for i in range(self.size.lines - levels - 1):
+            self.move(1, levels + 2 + i)
+            self.sys_stdout_write("\033[K")
+
+    def custom_write(self, string: str) -> None:
+        if string == "\n":
+            self.push_log(end=True)
+            return
+
+        strings = string.split("\n")
+        for s in strings:
+            self.push_log(s)
+
+    def custom_flush(self) -> None:
+        self.push_log(end=True)
+        self.print_log()
 
     def clear(self):
-        sys.stdout.write("\n" * (self.size.lines - 2))
-        sys.stdout.flush()
+        self.sys_stdout_write("\n" * (self.size.lines - 2))
+        self.sys_stdout_flush()
         self.move(1, 2)
 
     def move(self, x: int, y: int) -> None:
-        move(x, y, self.size)
+        if self.disable_terminal_chomp_chomp_value:
+            return
+        
+        move(self.sys_stdout_write, self.sys_stdout_flush, x, y, self.size)
 
     def add(self, estimator_id: int, estimator: Estimator) -> None:
         self.estimators[estimator_id] = estimator
@@ -152,14 +271,80 @@ class EstimatorManager:
     def remove(self, estimator_id: int) -> None:
         del self.estimators[estimator_id]
 
+    def initiate(self) -> None:
+        if self.disable_terminal_chomp_chomp_value:
+            return
+        
+        self.sys_stdout_write = sys.stdout.write
+        self.sys_stdout_flush = sys.stdout.flush
+        sys.stdout.write = self.custom_write
+        sys.stdout.flush = self.custom_flush
+        self.clear()
+
+    def conclude(self) -> None:
+        if self.disable_terminal_chomp_chomp_value:
+            return
+        
+        self.move(1, self.size.lines)
+
+        sys.stdout.write = self.sys_stdout_write
+        sys.stdout.flush = self.sys_stdout_flush
+        self.sys_stdout_write = None
+        self.sys_stdout_flush = None
+
     def finish(self, estimator_id: int) -> None:
         self.remove(estimator_id)
 
         if len(self.estimators) == 0:
-            self.move(1, self.size.lines)
+            self.conclude()
 
-    def estimate(self, iteratable: Iterable, title: str = "Loop"):
+    def update(self) -> None:
+        # for estimator in self.estimators.values():
+        #     estimator.stats()
+        
+        if self.disable_terminal_chomp_chomp_value:
+            return
+        
+        self.print_log()
+
+    def disable_terminal_chomp_chomp(self) -> None:
+        self.move(1, self.size.lines)
+        sys.stdout.write(f"\n {self.disable_terminal_chomp_chomp_value} \n")
+
+        if self.disable_terminal_chomp_chomp_value is True:
+            if self.sys_stdout_write is not None:
+                sys.stdout.write = self.sys_stdout_write
+                sys.stdout.flush = self.sys_stdout_flush
+                self.sys_stdout_write = None
+                self.sys_stdout_flush = None
+
+        else:
+            if self.sys_stdout_write is None:
+                self.sys_stdout_write = sys.stdout.write
+                self.sys_stdout_flush = sys.stdout.flush
+                sys.stdout.write = self.custom_write
+                sys.stdout.flush = self.custom_flush
+
+        for estimator in self.estimators.values():
+            print("YO!", sys.stdout.write, sys.stdout.flush)
+            estimator.disable_terminal_chomp_chomp = self.disable_terminal_chomp_chomp_value
+
+    def estimate(
+        self,
+        iteratable: Iterable,
+        title: str = "Loop",
+        disable_terminal_chomp_chomp: bool | None = False,
+    ):
         self.count += 1
+
+        if disable_terminal_chomp_chomp is not None:
+            self.disable_terminal_chomp_chomp_value = disable_terminal_chomp_chomp
+            self.disable_terminal_chomp_chomp()
+
+        if len(self.estimators) == 0:
+            self.initiate()
+        
+        print("Hello!")
 
         estimator = Estimator(
             level=len(self.estimators),
@@ -168,10 +353,11 @@ class EstimatorManager:
             iteratable=iteratable,
             finish_callback=self.finish,
             estimator_id=self.count,
+            sys_stdout_write=self.sys_stdout_write,
+            sys_stdout_flush=self.sys_stdout_flush,
+            update_callback=self.update,
+            disable_terminal_chomp_chomp=self.disable_terminal_chomp_chomp_value,
         )
-
-        if len(self.estimators) == 0:
-            self.clear()
 
         self.add(self.count, estimator)
 
@@ -184,5 +370,13 @@ manager = EstimatorManager()
 T = TypeVar("T")
 
 
-def estimate(iterable: Iterable[T], title: str = "Loop") -> Generator[T, None, None]:
-    return manager.estimate(iterable, title=title)
+def estimate(
+    iterable: Iterable[T],
+    title: str = "Loop",
+    disable_terminal_chomp_chomp: bool | None = None,
+) -> Generator[T, None, None]:
+    return manager.estimate(
+        iterable,
+        title=title,
+        disable_terminal_chomp_chomp=disable_terminal_chomp_chomp,
+    )

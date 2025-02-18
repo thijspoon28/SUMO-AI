@@ -1,4 +1,3 @@
-import random
 import sys
 import time
 from api.enums import Division
@@ -12,10 +11,28 @@ from utils.parsing import sumo_rank_to_value
 def tijmens_tests() -> None:
     ...
 
-    test_estimator()
+    # misc()
+    # test_estimator()
     # test_counting()
     # test_rank_value()
     # test_apis()
+
+
+def misc():
+    x = sys.stdout.write
+    def write(s) -> None:
+        s = "writeCall " + s
+        x(s)
+    
+    y = sys.stdout.flush
+    def flush() -> None:
+        x("flushCall")
+        y()
+
+    sys.stdout.write = write
+    sys.stdout.flush = flush
+    print("hello!")
+    print("hello2!")
 
 
 def test_apis():
@@ -57,11 +74,13 @@ def test_rank_value():
 
 
 def test_estimator():
-    def write(*v, **k):
-        ...
-    sys.stdout.write = lambda x: ...
-    for _ in estimate(range(1000), title="Testing"):
-        for _ in estimate(range(30), title="Testing"):
-            x = random.random() / 100
-            print(x)
-            # time.sleep(x)
+    for _ in estimate(range(30), title="Testing"):
+        print("hi!")
+        time.sleep(0.03)
+        
+    # for i in estimate(range(30), title="Testing 2"):
+    #     for i in estimate(range(30), title="Testing 3"):
+    #         x = 0.01
+    #         print(x, i)
+    #         time.sleep(x)
+
