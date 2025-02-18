@@ -1,4 +1,5 @@
 import random
+import sys
 import time
 from api.enums import Division
 from api.sumo import SumoAPI
@@ -11,7 +12,7 @@ from utils.parsing import sumo_rank_to_value
 def tijmens_tests() -> None:
     ...
 
-    # test_estimator()
+    test_estimator()
     # test_counting()
     # test_rank_value()
     # test_apis()
@@ -20,6 +21,7 @@ def tijmens_tests() -> None:
 def test_apis():
     api = SumoAPI()
 
+    print(api.get_kimarite().records[0].count)
     print(api.get_rikishi(215))
     print(api.get_ranks(215).records[0].id)
     print(api.get_basho_banzuke("202303", Division.Makuuchi).record.east[0].losses)
@@ -55,7 +57,11 @@ def test_rank_value():
 
 
 def test_estimator():
-    for _ in estimate(range(30), title="Testing"):
-        x = random.random()
-        print(x)
-        time.sleep(x)
+    def write(*v, **k):
+        ...
+    sys.stdout.write = lambda x: ...
+    for _ in estimate(range(1000), title="Testing"):
+        for _ in estimate(range(30), title="Testing"):
+            x = random.random() / 100
+            print(x)
+            # time.sleep(x)

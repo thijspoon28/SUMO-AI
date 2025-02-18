@@ -26,6 +26,7 @@ class BaseResponse(BaseModel, Generic[T]):
     total: int | None = None
     # sortField: str
     # sortOrder: str
+    has_result: bool
     record: T | None = None
     records: list[T] | None = []
 

@@ -66,17 +66,22 @@ class SumoAPI:
             skip=params["skip"],
             limit=params["limit"],
             total=data.get("total") if isinstance(data, dict) else None,
+            has_result=False,
         )
         if isinstance(data, dict) and (records := data.get("records")) is not None:
             if isinstance(records, list) and len(records) > 0:
-                # Dynamically get the type of records
+                result.has_result = True
                 record_type = schema.__annotations__["records"].__args__[0]
+
+                if get_origin(record_type) is list:
+                    record_type = get_args(record_type)[0]
+
                 result.records = [record_type(**r) for r in records]
             else:
                 result.records = []
         
         elif isinstance(data, list):
-            # Dynamically parse list of data as records
+            result.has_result = True
             record_type = schema.__annotations__["records"]
             record_type = next(t for t in get_args(record_type) if t is not type(None))
 
@@ -86,10 +91,10 @@ class SumoAPI:
             if get_origin(record_type) is list:
                 record_type = get_args(record_type)[0]
                 
-            print(record_type, schema.__annotations__["records"])
             result.records = [record_type(**item) for item in data]
         
         else:
+            result.has_result = True
             record_type = schema.__annotations__["record"].__args__[0]
             if isinstance(record_type, type) and issubclass(record_type, BaseModel):
                 result.record = record_type(**data)
