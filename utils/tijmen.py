@@ -1,5 +1,7 @@
 import random
 import time
+from api.enums import Division
+from api.sumo import SumoAPI
 from database.queries import DfQueries
 from utils.columns import count_kimarite
 from utils.estimate import estimate
@@ -9,9 +11,18 @@ from utils.parsing import sumo_rank_to_value
 def tijmens_tests() -> None:
     ...
 
-    test_estimator()
+    # test_estimator()
     # test_counting()
     # test_rank_value()
+    # test_apis()
+
+
+def test_apis():
+    api = SumoAPI()
+
+    print(api.get_rikishi(215))
+    print(api.get_ranks(215).records[0].id)
+    print(api.get_basho_banzuke("202303", Division.Makuuchi).record.east[0].losses)
 
 
 def test_counting():
