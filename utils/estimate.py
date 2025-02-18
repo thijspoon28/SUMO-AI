@@ -170,7 +170,7 @@ class Estimator:
 
 class EstimatorManager:
     def __init__(self):
-        self.estimators: dict[int, Estimator] = {}
+        self.estimators: dict[int, Estimator] = {}  # type: ignore
         self.count = 0
         self.size = os.get_terminal_size()
 
@@ -178,7 +178,7 @@ class EstimatorManager:
         self.sys_stdout_write = None
         self.sys_stdout_flush = None
 
-        self.log: list[str] = [""]
+        self.log: list[str] = [""]  # type: ignore
 
         self.disable_terminal_chomp_chomp_value = False
         
@@ -277,8 +277,8 @@ class EstimatorManager:
         
         self.sys_stdout_write = sys.stdout.write
         self.sys_stdout_flush = sys.stdout.flush
-        sys.stdout.write = self.custom_write
-        sys.stdout.flush = self.custom_flush
+        sys.stdout.write = self.custom_write  # type: ignore
+        sys.stdout.flush = self.custom_flush  # type: ignore
         self.clear()
 
     def conclude(self) -> None:
@@ -287,8 +287,8 @@ class EstimatorManager:
         
         self.move(1, self.size.lines)
 
-        sys.stdout.write = self.sys_stdout_write
-        sys.stdout.flush = self.sys_stdout_flush
+        sys.stdout.write = self.sys_stdout_write  # type: ignore
+        sys.stdout.flush = self.sys_stdout_flush  # type: ignore
         self.sys_stdout_write = None
         self.sys_stdout_flush = None
 
@@ -313,8 +313,8 @@ class EstimatorManager:
 
         if self.disable_terminal_chomp_chomp_value is True:
             if self.sys_stdout_write is not None:
-                sys.stdout.write = self.sys_stdout_write
-                sys.stdout.flush = self.sys_stdout_flush
+                sys.stdout.write = self.sys_stdout_write  # type: ignore
+                sys.stdout.flush = self.sys_stdout_flush  # type: ignore
                 self.sys_stdout_write = None
                 self.sys_stdout_flush = None
 
@@ -322,8 +322,8 @@ class EstimatorManager:
             if self.sys_stdout_write is None:
                 self.sys_stdout_write = sys.stdout.write
                 self.sys_stdout_flush = sys.stdout.flush
-                sys.stdout.write = self.custom_write
-                sys.stdout.flush = self.custom_flush
+                sys.stdout.write = self.custom_write  # type: ignore
+                sys.stdout.flush = self.custom_flush  # type: ignore
 
         for estimator in self.estimators.values():
             print("YO!", sys.stdout.write, sys.stdout.flush)
