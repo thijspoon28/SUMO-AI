@@ -1,4 +1,4 @@
-from typing import Any, Type, TypeVar, Union, get_args, get_origin, overload
+from typing import Any, Type, TypeVar, get_args, get_origin, overload
 from pydantic import BaseModel
 import requests  # type: ignore
 
