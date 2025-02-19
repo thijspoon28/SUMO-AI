@@ -40,7 +40,7 @@ class Estimator:
         self.size = size
         self.iteration = 0
         self.iteratable = iteratable
-        self.total = len(iteratable)
+        self.total = len(iteratable)  # type: ignore
         self.start_time = time.time()
         self.times = [self.start_time]
         self.avg = 0.0
@@ -102,7 +102,7 @@ class Estimator:
             self.ready_next_line()
 
         else:
-            print(f"{" " * (2 * self.level)}> {self.title} - {line}")
+            print(f"{' ' * (2 * self.level)}> {self.title} - {line}")
 
     def ready_next_line(self) -> None:
         if not self.disable_terminal_chomp_chomp:
