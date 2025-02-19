@@ -12,10 +12,10 @@ def tijmens_tests() -> None:
     ...
 
     # misc()
-    # test_estimator()
+    test_estimator()
     # test_counting()
     # test_rank_value()
-    test_apis()
+    # test_apis()
 
 
 def misc():
@@ -74,13 +74,16 @@ def test_rank_value():
 
 
 def test_estimator():
-    for _ in estimate(range(30), title="Testing"):
-        print("hi!")
-        time.sleep(0.03)
+    # for _ in estimate(range(30), title="Testing"):
+    #     print("hi!")
+    #     time.sleep(0.03)
         
-    # for i in estimate(range(30), title="Testing 2"):
-    #     for i in estimate(range(30), title="Testing 3"):
-    #         x = 0.01
-    #         print(x, i)
-    #         time.sleep(x)
+    for j in estimate(range(3), title="Testing 2"):
+        for k in estimate(range(30), title="Testing 3"):
+            x = 0.1
+            # print("a")
+            time.sleep(x)
+        for k in estimate(range(10), title="Testing 4"):
+            # print("b")
+            time.sleep(0.1)
 

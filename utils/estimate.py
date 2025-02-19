@@ -65,10 +65,7 @@ class Estimator:
         if self.disable_terminal_chomp_chomp:
             return 
         
-        try:
-            move(self.sys_stdout_write, self.sys_stdout_flush, x, y, self.size)
-        except Exception:
-            raise Exception(self.disable_terminal_chomp_chomp)
+        move(self.sys_stdout_write, self.sys_stdout_flush, x, y, self.size)
         
     def clear_line(self):
         if self.disable_terminal_chomp_chomp:
@@ -299,35 +296,36 @@ class EstimatorManager:
             self.conclude()
 
     def update(self) -> None:
-        # for estimator in self.estimators.values():
-        #     estimator.stats()
-        
         if self.disable_terminal_chomp_chomp_value:
             return
         
         self.print_log()
 
-    def disable_terminal_chomp_chomp(self) -> None:
-        self.move(1, self.size.lines)
-        sys.stdout.write(f"\n {self.disable_terminal_chomp_chomp_value} \n")
+    def disable_terminal_chomp_chomp(self, value: bool) -> None:
+        if self.disable_terminal_chomp_chomp_value == value:
+            return
 
-        if self.disable_terminal_chomp_chomp_value is True:
-            if self.sys_stdout_write is not None:
-                sys.stdout.write = self.sys_stdout_write  # type: ignore
-                sys.stdout.flush = self.sys_stdout_flush  # type: ignore
-                self.sys_stdout_write = None
-                self.sys_stdout_flush = None
+        self.disable_terminal_chomp_chomp_value = value
+
+        if value is True:
+            if self.sys_stdout_write is None:
+                return
+            self.move(1, self.size.lines)
+            sys.stdout.write = self.sys_stdout_write  # type: ignore
+            sys.stdout.flush = self.sys_stdout_flush  # type: ignore
+            self.sys_stdout_write = None
+            self.sys_stdout_flush = None
 
         else:
-            if self.sys_stdout_write is None:
-                self.sys_stdout_write = sys.stdout.write
-                self.sys_stdout_flush = sys.stdout.flush
-                sys.stdout.write = self.custom_write  # type: ignore
-                sys.stdout.flush = self.custom_flush  # type: ignore
+            if self.sys_stdout_write is not None:
+                return
+            self.sys_stdout_write = sys.stdout.write
+            self.sys_stdout_flush = sys.stdout.flush
+            sys.stdout.write = self.custom_write  # type: ignore
+            sys.stdout.flush = self.custom_flush  # type: ignore
 
         for estimator in self.estimators.values():
-            print("YO!", sys.stdout.write, sys.stdout.flush)
-            estimator.disable_terminal_chomp_chomp = self.disable_terminal_chomp_chomp_value
+            estimator.disable_terminal_chomp_chomp = value
 
     def estimate(
         self,
@@ -338,14 +336,11 @@ class EstimatorManager:
         self.count += 1
 
         if disable_terminal_chomp_chomp is not None:
-            self.disable_terminal_chomp_chomp_value = disable_terminal_chomp_chomp
-            self.disable_terminal_chomp_chomp()
+            self.disable_terminal_chomp_chomp(disable_terminal_chomp_chomp)
 
         if len(self.estimators) == 0:
             self.initiate()
         
-        print("Hello!")
-
         estimator = Estimator(
             level=len(self.estimators),
             size=self.size,
@@ -361,7 +356,11 @@ class EstimatorManager:
 
         self.add(self.count, estimator)
 
+        # try:
         return estimator.iterate()
+        # except Exception as exc:
+            # self.disable_terminal_chomp_chomp(True)
+            # raise Exception("OOO") from exc
 
 
 manager = EstimatorManager()
