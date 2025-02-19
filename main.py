@@ -22,7 +22,7 @@ def main():
     for i in estimate(range(2010, 2025), title="Basho's"):
         for j in estimate(range(1, 12, 2), title="Month"):
             basho_id = f"{i}{j:0>{2}}"
-            print("\n",basho_id)
+            print(basho_id)
 
             if basho_id == "201103" or basho_id == "202005":
                 continue

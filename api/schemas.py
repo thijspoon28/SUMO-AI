@@ -171,14 +171,6 @@ class BashoBanzuke(BaseModel):
     west: list[BashoBanzukeRikishi] | None = []
 
 
-class KimariteResponse(BaseModel):
-    limit: int
-    skip: int
-    sortField: str
-    sortOrder: str
-    records: list[Kimarite] | None = []
-
-
 class BashoTorikumi(BaseModel):
     date: str
     startDate: str
@@ -186,24 +178,3 @@ class BashoTorikumi(BaseModel):
     yusho: list[TorikumiYusho] | None = []
     specialPrizes: list[SpecialPrize] | None = []
     torikumi: list[Match] | None = []
-
-
-class KimariteMatchesResponse(BaseModel):
-    limit: int
-    skip: int
-    total: int
-    records: list[Match] | None = []
-
-
-class RikishiResponse(BaseModel):
-    limit: int
-    skip: int
-    total: int
-    records: list[Rikishi] | None = []
-
-
-class RikishiMatchesResponse(BaseModel):
-    limit: int
-    skip: int
-    total: int
-    records: list[RikishiMatch] | None = []
