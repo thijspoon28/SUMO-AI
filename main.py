@@ -14,12 +14,12 @@ def main():
     init_db(delete=False)
 
 
-    if os.getenv("USER") == "TIJMEN":
-        tijmens_tests()
-        return
+    # if os.getenv("USER") == "TIJMEN":
+    #     tijmens_tests()
+    #     return
 
 
-    for i in estimate(range(2010, 2025), title="Basho's"):
+    for i in estimate(range(2010, 2025), title="Basho's", disable_terminal_chomp_chomp=True):
         for j in estimate(range(1, 12, 2), title="Month"):
             basho_id = f"{i}{j:0>{2}}"
             print(basho_id)

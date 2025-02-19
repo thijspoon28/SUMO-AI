@@ -33,7 +33,7 @@ class Estimator:
         sys_stdout_write: Callable,
         sys_stdout_flush: Callable,
         update_callback: Callable,
-        disable_terminal_chomp_chomp: bool
+        disable_terminal_chomp_chomp: bool,
     ):
         self.level = level
         self.title = title
@@ -63,14 +63,14 @@ class Estimator:
 
     def move(self, x: int, y: int) -> None:
         if self.disable_terminal_chomp_chomp:
-            return 
-        
+            return
+
         move(self.sys_stdout_write, self.sys_stdout_flush, x, y, self.size)
-        
+
     def clear_line(self):
         if self.disable_terminal_chomp_chomp:
-            return 
-        
+            return
+
         self.sys_stdout_write("\033[K")
 
     def start(self) -> None:
@@ -82,7 +82,7 @@ class Estimator:
         if self.disable_terminal_chomp_chomp:
             print(line)
             return
-        
+
         self.move(1, self.level + 2)
 
         self.sys_stdout_write(line)
@@ -107,7 +107,7 @@ class Estimator:
         line = f"{completion} - {total=:.2f}s - {last=:.2f}s - estimate={estimate}"
 
         if self.disable_terminal_chomp_chomp:
-            print(line)
+            print(f"{" " * (2 * self.level)}> {self.title} - {line}")
             return
 
         self.move(spacing, self.level + 2)
@@ -120,8 +120,8 @@ class Estimator:
 
     def ready_next_line(self) -> None:
         if self.disable_terminal_chomp_chomp:
-            return 
-        
+            return
+
         self.move(1, self.level + 3)
 
     def calculate_estimate(self, last: float) -> str:
@@ -156,7 +156,7 @@ class Estimator:
 
         for idx, i in enumerate(self.iteratable):
             self.iteration += 1
-            
+
             yield i
 
             self.stats()
@@ -178,7 +178,7 @@ class EstimatorManager:
         self.log: list[str] = [""]  # type: ignore
 
         self.disable_terminal_chomp_chomp_value = False
-        
+
     def push_log(self, string: str | None = None, end: bool = False):
         def split_string(s: str, length: int):
             if len(s) == 0:
@@ -259,7 +259,7 @@ class EstimatorManager:
     def move(self, x: int, y: int) -> None:
         if self.disable_terminal_chomp_chomp_value:
             return
-        
+
         move(self.sys_stdout_write, self.sys_stdout_flush, x, y, self.size)
 
     def add(self, estimator_id: int, estimator: Estimator) -> None:
@@ -271,7 +271,7 @@ class EstimatorManager:
     def initiate(self) -> None:
         if self.disable_terminal_chomp_chomp_value:
             return
-        
+
         self.sys_stdout_write = sys.stdout.write
         self.sys_stdout_flush = sys.stdout.flush
         sys.stdout.write = self.custom_write  # type: ignore
@@ -281,7 +281,7 @@ class EstimatorManager:
     def conclude(self) -> None:
         if self.disable_terminal_chomp_chomp_value:
             return
-        
+
         self.move(1, self.size.lines)
 
         sys.stdout.write = self.sys_stdout_write  # type: ignore
@@ -298,7 +298,7 @@ class EstimatorManager:
     def update(self) -> None:
         if self.disable_terminal_chomp_chomp_value:
             return
-        
+
         self.print_log()
 
     def disable_terminal_chomp_chomp(self, value: bool) -> None:
@@ -340,7 +340,7 @@ class EstimatorManager:
 
         if len(self.estimators) == 0:
             self.initiate()
-        
+
         estimator = Estimator(
             level=len(self.estimators),
             size=self.size,
@@ -359,8 +359,8 @@ class EstimatorManager:
         # try:
         return estimator.iterate()
         # except Exception as exc:
-            # self.disable_terminal_chomp_chomp(True)
-            # raise Exception("OOO") from exc
+        # self.disable_terminal_chomp_chomp(True)
+        # raise Exception("OOO") from exc
 
 
 manager = EstimatorManager()
