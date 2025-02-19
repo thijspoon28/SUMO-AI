@@ -11,9 +11,14 @@ from utils.parsing import sumo_rank_to_value
 def tijmens_tests() -> None:
     ...
 
+    df1 = DfQueries.basho_rikishi()
+    df2 = DfQueries.basho_matches()
+    print(df1.columns)
+    print(df2.columns)
+
     # misc()
     # test_estimator()
-    test_counting()
+    # test_counting()
     # test_rank_value()
     # test_apis()
 
