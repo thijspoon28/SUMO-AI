@@ -79,11 +79,11 @@ def test_estimator():
     #     time.sleep(0.03)
         
     for j in estimate(range(3), title="Testing 2"):
-        for k in estimate(range(30), title="Testing 3"):
+        for k in estimate(range(30), title="Testing 3", disable_terminal_chomp_chomp=False):
             x = 0.1
-            # print("a")
+            print("a", "")
             time.sleep(x)
-        for k in estimate(range(10), title="Testing 4"):
-            # print("b")
+        for k in estimate(range(10), title="Testing 4", disable_terminal_chomp_chomp=True):
+            print("b", "\n", "o")
             time.sleep(0.1)
 
