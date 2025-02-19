@@ -12,8 +12,8 @@ def tijmens_tests() -> None:
     ...
 
     # misc()
-    test_estimator()
-    # test_counting()
+    # test_estimator()
+    test_counting()
     # test_rank_value()
     # test_apis()
 
