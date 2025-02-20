@@ -6,9 +6,15 @@ from sqlalchemy.orm import sessionmaker
 from database.models import Base, Rikishi
 
 
+DB = "sumo.db"
+_main_db = "sumo.db"
+
 
 def get_engine():
-    return create_engine("sqlite:///sumo.db", echo=False)
+    if _main_db != DB:
+        for _ in range(3):
+            print(f"WARNING! WARNING! WARNING! USING DATABASE '{DB}' INSTEAD OF '{_main_db}'!!!")
+    return create_engine(f"sqlite:///{DB}", echo=False)
 
 
 def get_session():
@@ -21,7 +27,7 @@ def init_db(delete: bool = False):
     session = get_session()
 
     if delete:
-        os.remove("sumo.db")
+        os.remove(DB)
         Base.metadata.create_all(session.get_bind())
         return
         

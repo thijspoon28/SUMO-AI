@@ -1,26 +1,52 @@
+import random
 import sys
 import time
+
+# from pydantic import ValidationError
 from api.enums import Division
+from api.scraper import scramble_rikishi, scrape_all
 from api.sumo import SumoAPI
 from database.queries import DfQueries
 from utils.columns import count_kimarite
 from utils.estimate import estimate
 from utils.parsing import sumo_rank_to_value
+import api.schemas as schema
 
 
 def tijmens_tests() -> None:
     ...
 
-    df1 = DfQueries.basho_rikishi()
-    df2 = DfQueries.basho_matches()
-    print(df1.columns)
-    print(df2.columns)
 
     # misc()
     # test_estimator()
     # test_counting()
     # test_rank_value()
     # test_apis()
+    test_scraper()
+    # test_rikishi_scrambler()
+
+
+def test_rikishi_scrambler():
+    rikishi_id = 215
+    rikishi_id = 5727
+    r = scramble_rikishi(rikishi_id, True, True, True)
+    
+    print(schema.ValidateRikishi.model_validate(r))
+    # print(r.shikonaHistory[0])
+    # try:
+    #     print("oh yes!")
+        
+    # except ValidationError:
+    #     print("oh no!")
+
+    # print(r)
+    # print(r.measurementHistory)
+    # print(r.rankHistory)
+    # print(r.shikonaHistory)
+
+
+def test_scraper():
+    scrape_all()
 
 
 def misc():
@@ -82,13 +108,18 @@ def test_estimator():
     # for _ in estimate(range(30), title="Testing"):
     #     print("hi!")
     #     time.sleep(0.03)
+
+    lim = 35
         
-    for j in estimate(range(3), title="Testing 2"):
-        for k in estimate(range(30), title="Testing 3", disable_terminal_chomp_chomp=False):
-            x = 0.1
-            print("a", "")
+    for j in estimate(range(3), title="Testing 2", disable_terminal_chomp_chomp=False):
+        for k in estimate(range(30), title="Testing 3"):
+            lim -= 1
+            x = random.random()
+            print("a", x)
+            if lim < 0:
+                raise Exception(">:(")
             time.sleep(x)
-        for k in estimate(range(10), title="Testing 4", disable_terminal_chomp_chomp=True):
+        for k in estimate(range(10), title="Testing 4"):
             print("b", "\n", "o")
             time.sleep(0.1)
 

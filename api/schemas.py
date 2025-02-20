@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class Measurement(BaseModel):
@@ -134,6 +134,8 @@ class Rikishi(BaseModel):
     updatedAt: datetime | None = None
     createdAt: datetime | None = None
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class RikishiVersus(BaseModel):
     kimariteLosses: dict[str, int]
@@ -178,3 +180,69 @@ class BashoTorikumi(BaseModel):
     yusho: list[TorikumiYusho] | None = []
     specialPrizes: list[SpecialPrize] | None = []
     torikumi: list[Match] | None = []
+
+
+class ValidateMeasurement(BaseModel):
+    basho_id: str
+    rikishi_id: int
+    height: float
+    weight: float
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ValidateRank(BaseModel):
+    basho_id: str
+    rikishi_id: int
+    rank_value: int
+    rank: str
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ValidateShikona(BaseModel):
+    basho_id: str
+    rikishi_id: int
+    shikona_en: str
+    shikona_jp: str | None = None
+    
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ValidateRikishi(BaseModel):
+    id: int
+    sumodb_id: int | None = None
+    nsk_id: int
+    shikona_en: str
+    shikona_jp: str | None = None
+    current_rank: str
+    heya: str | None = None
+    birth_date: datetime | None = None
+    shusshin: str | None = None
+    height: float
+    weight: float
+    debut: str
+    intai: datetime | None = None
+    updated_at: datetime | None = None
+    created_at: datetime | None = None
+
+    absence_by_division: dict[str, int]
+    basho_count: int
+    basho_count_by_division: dict[str, int]
+    loss_by_division: dict[str, int]
+    sansho: dict[str, int]
+    total_absences: int
+    total_by_division: dict[str, int]
+    total_losses: int
+    total_matches: int
+    total_wins: int
+    wins_by_division: dict[str, int]
+    yusho_count: int
+    yusho_count_by_division: dict[str, int]
+
+    measurementHistory: list[ValidateMeasurement] | None = []
+    rankHistory: list[ValidateRank] | None = []
+    shikonaHistory: list[ValidateShikona] | None = []
+
+    model_config = ConfigDict(from_attributes=True)
+
