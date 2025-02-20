@@ -34,12 +34,14 @@ def rikishi_wins_this_basho(basho_id, day, rikishi):
     df = df.loc[df['day'] < day]
     return len(df[df['winner_id'] == rikishi])
 
+
 def rikishi_wins_last_2_years(basho_id, day, rikishi):
     basho_id = int(basho_id)
     basho_id_range = [str(i) for i in range(basho_id, basho_id - 12, -1)]
     # print(basho_id_range)
     df = df2.loc[df2['basho_id'].isin(basho_id_range)]
     return len(df[df['winner_id'] == rikishi])
+
 
 def ratio_to_opponent(P1, P2):
     df = df2.loc[((df2['east_rikishi_id'] == P1) & (df2['west_rikishi_id'] == P2)) |
@@ -60,16 +62,18 @@ def winstreak(basho_id, day, rikishi):
             return wins
         
 
-count = 0
 
-for index, i in enumerate(df2['match_no']):
-    print(df2.loc[df2.index[index], 'basho_id'], df2.loc[df2.index[index], 'day'], df2.loc[df2.index[index], 'match_no'])
-    print(df2.loc[df2.index[index], 'east_rikishi_id'], df2.loc[df2.index[index], 'east_shikona'])
-    print(df2.loc[df2.index[index], 'west_rikishi_id'], df2.loc[df2.index[index], 'west_shikona'])
-    print("rikishi wins this basho", rikishi_wins_this_basho(df2.loc[df2.index[index], 'basho_id'], df2.loc[df2.index[index], 'day'], df2.loc[df2.index[index], 'east_rikishi_id']))
-    print("rikishi wins last 2 years", rikishi_wins_last_2_years(df2.loc[df2.index[index], 'basho_id'], df2.loc[df2.index[index], 'day'], df2.loc[df2.index[index], 'east_rikishi_id']))
-    print("ratio to opponent", ratio_to_opponent(df2.loc[df2.index[index], 'east_rikishi_id'], df2.loc[df2.index[index], 'west_rikishi_id']))
-    print("winstreak", winstreak(df2.loc[df2.index[index], 'basho_id'], df2.loc[df2.index[index], 'day'], df2.loc[df2.index[index], 'east_rikishi_id']))
-    count += 1
-    if count > 10:
-        break
+if __name__ == "__main__":
+    count = 0
+
+    for index, i in enumerate(df2['match_no']):
+        print(df2.loc[df2.index[index], 'basho_id'], df2.loc[df2.index[index], 'day'], df2.loc[df2.index[index], 'match_no'])
+        print(df2.loc[df2.index[index], 'east_rikishi_id'], df2.loc[df2.index[index], 'east_shikona'])
+        print(df2.loc[df2.index[index], 'west_rikishi_id'], df2.loc[df2.index[index], 'west_shikona'])
+        print("rikishi wins this basho", rikishi_wins_this_basho(df2.loc[df2.index[index], 'basho_id'], df2.loc[df2.index[index], 'day'], df2.loc[df2.index[index], 'east_rikishi_id']))
+        print("rikishi wins last 2 years", rikishi_wins_last_2_years(df2.loc[df2.index[index], 'basho_id'], df2.loc[df2.index[index], 'day'], df2.loc[df2.index[index], 'east_rikishi_id']))
+        print("ratio to opponent", ratio_to_opponent(df2.loc[df2.index[index], 'east_rikishi_id'], df2.loc[df2.index[index], 'west_rikishi_id']))
+        print("winstreak", winstreak(df2.loc[df2.index[index], 'basho_id'], df2.loc[df2.index[index], 'day'], df2.loc[df2.index[index], 'east_rikishi_id']))
+        count += 1
+        if count > 10:
+            break

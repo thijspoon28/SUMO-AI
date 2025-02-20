@@ -18,7 +18,7 @@ from utils.estimate import estimate
 
 
 def log_missing_rikishi(rikishi_id: int):
-    with open("missing_rikishi.txt", "a") as f:
+    with open("data/missing_rikishi.txt", "a") as f:
         f.write(f"{rikishi_id}\n")
 
 
@@ -283,7 +283,7 @@ def scrape_all():
     api = SumoAPI()
     session = get_session()
 
-    rikishis_r = api.get_rikishis(scrape=True, skip=5725)
+    rikishis_r = api.get_rikishis(scrape=True, skip=6312)
     assert rikishis_r.records is not None
 
     basho_data: dict[str, BashoResponse] = {}  # type: ignore
