@@ -68,6 +68,7 @@ class SumoAPI:
             total=data.get("total") if isinstance(data, dict) else None,
             has_result=False,
         )
+
         if isinstance(data, dict) and (records := data.get("records")) is not None:
             if isinstance(records, list) and len(records) > 0:
                 result.has_result = True
@@ -79,6 +80,9 @@ class SumoAPI:
                 result.records = [record_type(**r) for r in records]
             else:
                 result.records = []
+
+        elif isinstance(data, dict) and data.get("limit") is not None and data.get("records") is None:
+            result.records = []
         
         elif isinstance(data, list):
             result.has_result = True
@@ -107,25 +111,27 @@ class SumoAPI:
         if params.get("limit") is None:
             params["limit"] = 1000
 
-        result = None
+        result = schema(
+            limit=params["limit"],
+            skip=params["skip"],
+            has_result=True,
+        )
+        print(f"Starting scrape: {url}")
 
         while True:
             data = cls.request(url, params=params, schema=schema)
-            amount = len(data.records) if data.records is not None else 0  # type: ignore
+            amount = len(data.records) if data.records is not None else 0
 
             if amount == 0:
                 break
 
+            assert data.records is not None
+
+            result.limit += amount
             params["skip"] += amount
 
-            if result is not None:
-                result.records += data.records  # type: ignore
-
-            else:
-                result = data
-        
-        if result is None:
-            raise Exception("Ahw shit")
+            result.records = data.records if result.records is None else result.records + data.records
+            print(f"Retrieved {len(result.records)} (+{amount}) records.")
         
         return result
 

@@ -13,6 +13,9 @@ class Measurement(Base):  # type: ignore
     height = Column(Float, nullable=False)
     weight = Column(Float, nullable=False)
 
+    def __repr__(self) -> str:
+        return f"Measurement(rikishi_id={self.rikishi_id}, basho_id={self.basho_id}, h/w={self.height}/{self.weight})"
+
 
 class Rank(Base):  # type: ignore
     __tablename__ = "rank"
@@ -22,6 +25,9 @@ class Rank(Base):  # type: ignore
     rank_value = Column(Integer, nullable=False)
     rank = Column(String, nullable=False)
 
+    def __repr__(self) -> str:
+        return f"Rank(rikishi_id={self.rikishi_id}, basho_id={self.basho_id}, r/v={self.rank}/{self.rank_value})"
+
 
 class Shikona(Base):  # type: ignore
     __tablename__ = "shikona"
@@ -30,6 +36,9 @@ class Shikona(Base):  # type: ignore
     rikishi_id = Column(Integer, ForeignKey("rikishi.id"), primary_key=True)
     shikona_en = Column(String, nullable=False)
     shikona_jp = Column(String, nullable=False)
+
+    def __repr__(self) -> str:
+        return f"Shikona(rikishi_id={self.rikishi_id}, basho_id={self.basho_id}, en/jp={self.shikona_en}/{self.shikona_jp})"
 
 
 class Match(Base):  # type: ignore
@@ -57,6 +66,9 @@ class Match(Base):  # type: ignore
 
     def concat_id(self) -> str:
         return f"{self.basho_id}-{self.day}-{self.east_id}-{self.west_id}"
+
+    def __repr__(self) -> str:
+        return f"Match({self.concat_id})"
 
 
 class Rikishi(Base):  # type: ignore
@@ -103,6 +115,9 @@ class Rikishi(Base):  # type: ignore
     east_matches = relationship("Match", foreign_keys="[Match.east_id]", back_populates="east_rikishi")
     west_matches = relationship("Match", foreign_keys="[Match.west_id]", back_populates="west_rikishi")
 
+    def __repr__(self) -> str:
+        return f"Rikishi({self.id})"
+
 
 class Basho(Base):  # type: ignore
     __tablename__ = "basho"
@@ -128,4 +143,3 @@ class RikishiBasho(Base):  # type: ignore
 
     rikishi: Mapped[Rikishi] = relationship(back_populates="bashos")
     basho: Mapped[Basho] = relationship(back_populates="rikishis")
-

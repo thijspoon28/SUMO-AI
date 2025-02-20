@@ -29,10 +29,11 @@ class Estimator:
         size: os.terminal_size,
         iteratable: Iterable,
         finish_callback: Callable,
+        update_callback: Callable,
+        handle_exc_callback: Callable,
         estimator_id: int,
         sys_stdout_write: Callable,
         sys_stdout_flush: Callable,
-        update_callback: Callable,
         disable_terminal_chomp_chomp: bool,
     ):
         self.level = level
@@ -44,12 +45,14 @@ class Estimator:
         self.start_time = time.time()
         self.times = [self.start_time]
         self.avg = 0.0
+        self.force_update = time.time()
 
         self.finish_callback = finish_callback
+        self.update_callback = update_callback
+        self.handle_exc_callback = handle_exc_callback
         self.estimator_id = estimator_id
         self.sys_stdout_write = sys_stdout_write
         self.sys_stdout_flush = sys_stdout_flush
-        self.update_callback = update_callback
         self.disable_terminal_chomp_chomp = disable_terminal_chomp_chomp
 
     def __repr__(self):
@@ -73,6 +76,7 @@ class Estimator:
 
         if not self.disable_terminal_chomp_chomp:
             self.move(1, self.level + 2)
+            self.clear_line()
             self.sys_stdout_write(line)
             self.sys_stdout_flush()
             self.ready_next_line()
@@ -81,6 +85,8 @@ class Estimator:
             print(line)
 
     def stats(self) -> None:
+        self.size = os.get_terminal_size()
+
         cur = time.time()
         total = cur - self.start_time
         last = cur - self.times[-1]
@@ -88,14 +94,20 @@ class Estimator:
         self.times.append(cur)
         percent = self.iteration / self.total * 100
 
-        spacing = (2 * self.level) + 2 + len(self.title) + 4
+        if last < 0.02 and self.iteration != self.total:
+            if self.force_update < cur:
+                self.force_update = cur + 0.2
+            else:
+                return
+
+        spacing = "  " * self.level
         completion = f"{self.iteration} / {self.total} ({percent:5.1f}%)"
 
         estimate = self.calculate_estimate(last)
-        line = f"{completion} - {total=:.2f}s - {last=:.2f}s - estimate={estimate}"
+        line = f"{spacing}> {self.title} - {completion} - {total=:.2f}s - {last=:.2f}s - estimate={estimate}"
 
         if not self.disable_terminal_chomp_chomp:
-            self.move(spacing, self.level + 2)
+            self.move(1, self.level + 2)
             self.clear_line()
             self.sys_stdout_write(line)
             self.sys_stdout_flush()
@@ -109,7 +121,8 @@ class Estimator:
             self.move(1, self.level + 3)
 
     def calculate_estimate(self, last: float) -> str:
-        times = self.times[-5:]
+        lookback = int(self.total * 0.05)
+        times = self.times[-lookback:]
         avg_diff = (
             sum(times[i] - times[i - 1] for i in range(1, len(times)))
             / (len(times) - 1)
@@ -123,21 +136,22 @@ class Estimator:
         estimate = (linear_estimation + avg_estimation) / 2
         dt = datetime.datetime.fromtimestamp(estimate)
 
-        return dt.strftime("%H:%M:%S")
-
+        return dt.strftime('%d-%m-%Y %H:%M:%S')
+    
     def iterate(self) -> Generator:
         self.start()
 
         for _ in self.iteratable:
             self.iteration += 1
+
             yield _
+
             self.stats()
             self.update_callback()
 
         self.finish()
 
 
-# EstimatorManager class
 class EstimatorManager:
     def __init__(self):
         self.estimators: dict[int, Estimator] = {}  # type: ignore
@@ -146,6 +160,7 @@ class EstimatorManager:
         self.sys_stdout_write = None
         self.sys_stdout_flush = None
         self.log: list[str] = [""]  # type: ignore
+        self.new_log = False
         self.disable_terminal_chomp_chomp_value = False
 
     def push_log(self, string: str | None = None, end: bool = False):
@@ -161,6 +176,7 @@ class EstimatorManager:
             )
 
     def print_log(self) -> None:
+        self.size = os.get_terminal_size()
         logs = self.log[-(self.size.lines - len(self.estimators) - 2) :]
 
         if len(self.log) > len(logs):
@@ -183,6 +199,8 @@ class EstimatorManager:
             self.sys_stdout_write("\033[K")
 
     def custom_write(self, string: str) -> None:
+        self.new_log = True
+
         if string == "\n":
             self.push_log(end=True)
 
@@ -230,7 +248,17 @@ class EstimatorManager:
 
     def update(self) -> None:
         if not self.disable_terminal_chomp_chomp_value:
-            self.print_log()
+            if self.new_log:
+                self.print_log()
+                self.new_log = False
+
+    def handle_exc(self, exc: Exception) -> None:
+        if self.disable_terminal_chomp_chomp_value:
+            self.move(1, self.size.lines)
+
+        self.disable_terminal_chomp_chomp(True)
+
+        raise exc
 
     def disable_terminal_chomp_chomp(self, value: bool) -> None:
         if self.disable_terminal_chomp_chomp_value == value:
@@ -275,18 +303,19 @@ class EstimatorManager:
             size=self.size,
             iteratable=iteratable,
             finish_callback=self.finish,
+            update_callback=self.update,
+            handle_exc_callback=self.handle_exc,
             estimator_id=self.count,
             sys_stdout_write=self.sys_stdout_write,
             sys_stdout_flush=self.sys_stdout_flush,
-            update_callback=self.update,
             disable_terminal_chomp_chomp=self.disable_terminal_chomp_chomp_value,
         )
 
         self.add(self.count, estimator)
-        return estimator.iterate()
 
+        return estimator.iterate()  # This is where the generator runs.
+    
 
-# Global EstimatorManager instance
 manager = EstimatorManager()
 
 

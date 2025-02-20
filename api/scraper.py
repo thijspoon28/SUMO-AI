@@ -1,11 +1,85 @@
-from api.schemas import BashoBanzukeRikishi
-from database.models import Basho, Match, Rikishi, RikishiBasho
+from pydantic import ValidationError
+from api.response_schemas import BashoResponse
+from database.models import (
+    Basho,
+    Match,
+    Measurement,
+    Rank,
+    Rikishi,
+    RikishiBasho,
+    Shikona,
+)
 from database.queries import Repo
 from database.session import get_session
 from api.enums import Division
 from api.sumo import SumoAPI
 import api.schemas as schema
 from utils.estimate import estimate
+
+
+def log_missing_rikishi(rikishi_id: int):
+    with open("missing_rikishi.txt", "a") as f:
+        f.write(f"{rikishi_id}\n")
+
+
+def include(
+    rikishi: Rikishi,
+    ranks: list[schema.Rank] = [],
+    measurements: list[schema.Measurement] = [],
+    shikonas: list[schema.Shikona] = [],
+) -> Rikishi:
+    for r in ranks:
+        model = Rank(
+            basho_id=r.bashoId,
+            rikishi_id=r.rikishiId,
+            rank_value=r.rankValue,
+            rank=r.rank,
+        )
+
+        rikishi.rankHistory.append(model)
+
+    for m in measurements:
+        model = Measurement(
+            basho_id=m.bashoId,
+            rikishi_id=m.rikishiId,
+            height=m.height,
+            weight=m.weight,
+        )
+
+        rikishi.measurementHistory.append(model)
+
+    for s in shikonas:
+        model = Shikona(
+            basho_id=s.bashoId,
+            rikishi_id=s.rikishiId,
+            shikona_en=s.shikonaEn,
+            shikona_jp=s.shikonaJp,
+        )
+
+        rikishi.shikonaHistory.append(model)
+
+    return rikishi
+
+
+def rikishi_ranks(rikishi_id: int, scrape: bool = False):
+    api = SumoAPI()
+    ranks_r = api.get_ranks(rikishi_id, scrape=scrape)
+    ranks: list[schema.Rank] = ranks_r.records if ranks_r.length > 0 else [schema.Rank(id="", bashoId="", rikishiId=0, rank="Unranked", rankValue=9999)]  # type: ignore
+    return ranks
+
+
+def rikishi_measurements(rikishi_id: int, scrape: bool = False):
+    api = SumoAPI()
+    measurements_r = api.get_measurements(rikishi_id, scrape=scrape)
+    measurements: list[schema.Measurement] = measurements_r.records if measurements_r.length > 0 else [schema.Measurement(id="", bashoId="", rikishiId=0, height=-1, weight=-1)]  # type: ignore
+    return measurements
+
+
+def rikishi_shikonas(rikishi_id: int, scrape: bool = False):
+    api = SumoAPI()
+    shikonas_r = api.get_shikonas(rikishi_id, scrape=scrape)
+    shikonas: list[schema.Shikona] = shikonas_r.records if shikonas_r.length > 0 else [schema.Shikona(id="", bashoId="", rikishiId=0, shikonaEn="No name", shikonaJp="No name")]  # type: ignore
+    return shikonas
 
 
 def scramble_rikishi(
@@ -31,19 +105,16 @@ def scramble_rikishi(
     rikishi: schema.Rikishi = rikishi_r.record
 
     if incl_ranks or not rikishi.currentRank:
-        ranks_r = api.get_ranks(rikishi_id)
-        ranks: list[schema.Rank] = ranks_r.records if ranks_r.length > 0 else [schema.Rank(id="", bashoId="", rikishiId=0, rank="Unranked", rankValue=9999)]  # type: ignore
+        ranks = rikishi_ranks(rikishi_id, scrape=incl_ranks)
         rikishi.currentRank = ranks[0].rank
 
     if incl_measurements or not rikishi.height or not rikishi.weight:
-        measurements_r = api.get_measurements(rikishi_id)
-        measurements: list[schema.Measurement] = measurements_r.records if measurements_r.length > 0 else [schema.Measurement(id="", bashoId="", rikishiId=0, height=-1, weight=-1)]  # type: ignore
+        measurements = rikishi_measurements(rikishi_id, scrape=incl_measurements)
         rikishi.height = measurements[0].height
         rikishi.weight = measurements[0].weight
 
     if incl_shikonas or not rikishi.shikonaEn or not rikishi.shikonaJp:
-        shikonas_r = api.get_shikonas(rikishi_id)
-        shikonas: list[schema.Shikona] = shikonas_r.records if shikonas_r.length > 0 else [schema.Shikona(id="", bashoId="", rikishiId=0, shikonaEn="No name", shikonaJp="No name")]  # type: ignore
+        shikonas = rikishi_shikonas(rikishi_id, scrape=incl_shikonas)
         rikishi.shikonaEn = shikonas[0].shikonaEn
         rikishi.shikonaJp = shikonas[0].shikonaJp
 
@@ -79,9 +150,13 @@ def scramble_rikishi(
     )
 
     if incl_measurements:
-        for m in measurements:
-            
-            rikishi_model
+        rikishi_model = include(rikishi_model, measurements=measurements)
+
+    if incl_ranks:
+        rikishi_model = include(rikishi_model, ranks=ranks)
+
+    if incl_shikonas:
+        rikishi_model = include(rikishi_model, shikonas=shikonas)
 
     return rikishi_model
 
@@ -103,7 +178,7 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
 
     count = 0
 
-    basho_model = Repo.find_basho(basho_id)
+    basho_model = Repo.find_basho(session, basho_id)
     if basho_model is None:
         basho_model = Basho(
             id=basho_id,
@@ -133,10 +208,10 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
     if basho_banzuke.west is None:
         basho_banzuke.west = []
 
-    rikishis: list[BashoBanzukeRikishi] = basho_banzuke.east + basho_banzuke.west
+    rikishis: list[schema.BashoBanzukeRikishi] = basho_banzuke.east + basho_banzuke.west
 
     for banzuke_rikishi in estimate(rikishis, title="Rikishi"):
-        r = Repo.find_rikishi(banzuke_rikishi.rikishiID)
+        r = Repo.find_rikishi(session, banzuke_rikishi.rikishiID)
 
         if r is None:
             r = scramble_rikishi(banzuke_rikishi.rikishiID)
@@ -161,7 +236,7 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
                 continue
 
             if (
-                Repo.find_match(basho_id, division, int(r.id), match_.opponentID)
+                Repo.find_basho_versus(session, basho_id, int(r.id), match_.opponentID)
                 is not None
             ):
                 continue
@@ -174,7 +249,7 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
 
             for rm in rikishi_matches_r.record.matches:
                 if (
-                    Repo.find_match(rm.bashoId, rm.division, rm.eastId, rm.westId)
+                    Repo.find_match(session, rm.bashoId, rm.day, rm.eastId, rm.westId)
                     is not None
                 ):
                     continue
@@ -204,50 +279,64 @@ def scrape_basho(basho_id: str, division: Division | str) -> None:
         session.commit()
 
 
-def scrape_all(limit: int | None = None):
+def scrape_all():
     api = SumoAPI()
     session = get_session()
 
-    # Get all rikishi
-    #   - Get stats
-    #   - Get all ranks
-    #   - Get all measurements
-    #   - Get all shikonas
-
-    rikishis_r = api.get_rikishis(
-        limit=limit,
-    )
+    rikishis_r = api.get_rikishis(scrape=True, skip=58)
     assert rikishis_r.records is not None
 
-    rikishi_models: list[Rikishi] = []
-    rikishis = rikishis_r.records
+    basho_data: dict[str, BashoResponse] = {}  # type: ignore
 
-    for rikishi in rikishis:
-        r = scramble_rikishi(rikishi.id)
+    for rikishi in estimate(rikishis_r.records, title="Rikishi", disable_terminal_chomp_chomp=False):
+        r = Repo.find_rikishi(session, rikishi.id)
 
-        session.add(r)
-        session.refresh(r)
+        print(f"Rikishi: ({r.id}) {r.shikona_en}")
 
-        rikishi_models.append(r)
+        if r is None:
+            r = scramble_rikishi(rikishi.id, True, True, True)
 
-    # Get all busho
+            try:
+                schema.ValidateRikishi.model_validate(r)
 
-    # Get all kimarite
-    # Get all matches per kimarite
-    # Match all matches with rikishi
+            except ValidationError:
+                log_missing_rikishi(rikishi.id)
+                continue
 
-    kimarite_r = api.get_kimarite()
-    assert kimarite_r.records is not None
+            else:
+                session.add(r)
 
-    for k in kimarite_r.records:
-        k_matches_r = api.get_kimarite_detail(k.kimarite)
-        assert k_matches_r.records is not None
+        else:
+            x = []
+            if not r.measurementHistory:
+                r = include(r, measurements=rikishi_measurements(r.id))
+                x.append("Measurement")
 
-        for km in k_matches_r.records:
-            if Repo.find_basho(km.bashoId) is None:
+            if not r.rankHistory:
+                r = include(r, ranks=rikishi_ranks(r.id))
+                x.append("Rank")
+
+            if not r.shikonaHistory:
+                r = include(r, shikonas=rikishi_shikonas(r.id))
+                x.append("Shikona")
+
+            if len(x) > 0:
+                print(f"Retrieved {x} histories.")
+
+        matches_r = api.get_rikishi_matches(r.id, scrape=True)
+        assert matches_r.records is not None
+
+        for km in estimate(matches_r.records, title="Matches"):
+            if not basho_data.get(km.bashoId):
                 basho_r = api.get_basho(km.bashoId)
-                assert basho_r.record is not None
+                basho_data[km.bashoId] = basho_r
 
+            else:
+                basho_r = basho_data[km.bashoId]
+
+            assert basho_r.record is not None
+
+            if Repo.find_basho(session, km.bashoId) is None:
                 b = Basho(
                     id=km.bashoId,
                     date=basho_r.record.date,
@@ -255,23 +344,62 @@ def scrape_all(limit: int | None = None):
                     end_date=basho_r.record.endDate,
                 )
 
+                print(f"Added basho {km.bashoId}")
                 session.add(b)
 
-            m = Match(
-                basho_id=km.bashoId,
-                division=km.division,
-                day=km.day,
-                match_no=km.matchNo,
-                east_id=km.eastId,
-                east_shikona=km.eastShikona,
-                east_rank=km.eastRank,
-                west_id=km.westId,
-                west_shikona=km.westShikona,
-                west_rank=km.westRank,
-                kimarite=k.kimarite,
-                winner_id=km.winnerId,
-                winner_en=km.winnerEn,
-                winner_jp=km.winnerJp,
-            )
+            if Repo.find_rikishi_basho(session, km.bashoId, rikishi.id) is None:
+                # Get special prize and yusho
+                sp = next(
+                    (
+                        d.type
+                        for d in basho_r.record.specialPrizes
+                        if d.rikishiId == rikishi.id
+                    ),
+                    None,
+                )
+                yu = next(
+                    (
+                        d.type
+                        for d in basho_r.record.yusho
+                        if d.rikishiId == rikishi.id
+                    ),
+                    None,
+                )
 
-            session.add(m)
+                rb = RikishiBasho(
+                    rikishi_id=rikishi.id,
+                    basho_id=km.bashoId,
+                    special_prize=sp,
+                    yusho=yu,
+                )
+
+                print(f"Added basho_rikishi {rb.basho_id}-{rb.rikishi_id}, sp={rb.special_prize}, yu={rb.yusho}")
+                session.add(rb)
+
+            if (
+                Repo.find_match(session, km.bashoId, km.day, km.eastId, km.westId)
+                is None
+            ):
+                m = Match(
+                    basho_id=km.bashoId,
+                    division=km.division,
+                    day=km.day,
+                    match_no=km.matchNo,
+                    east_id=km.eastId,
+                    east_shikona=km.eastShikona,
+                    east_rank=km.eastRank,
+                    west_id=km.westId,
+                    west_shikona=km.westShikona,
+                    west_rank=km.westRank,
+                    kimarite=km.kimarite,
+                    winner_id=km.winnerId,
+                    winner_en=km.winnerEn,
+                    winner_jp=km.winnerJp,
+                )
+
+                msg = f"{km.bashoId}-{km.day} east={km.eastId} vs west={km.westId}"
+                print(f"Added match ({msg})")
+                session.add(m)
+
+        print("\n")
+        session.commit()

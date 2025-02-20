@@ -1,5 +1,5 @@
 from sqlalchemy import or_, select, text
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, Session
 from database.models import Basho, Match, Rikishi, RikishiBasho
 from database.session import get_session
 import pandas as pd  # type: ignore
@@ -7,76 +7,93 @@ import pandas as pd  # type: ignore
 
 class Repo:
     @staticmethod
-    def find_rikishi(rikishi_id: int) -> Rikishi | None:
-        session = get_session()
-
+    def find_rikishi(session: Session, rikishi_id: int) -> Rikishi | None:
         query = select(Rikishi).where(Rikishi.id == rikishi_id)
 
         result = session.execute(query).scalars().first()
-        session.close()
         return result
 
     @staticmethod
-    def find_basho(basho_id: str) -> Basho | None:
-        session = get_session()
+    def find_rikishi_basho(
+        session: Session,
+        basho_id: str,
+        rikishi_id: int,
+    ) -> Basho | None:
+        query = select(RikishiBasho).where(
+            RikishiBasho.basho_id == basho_id,
+            RikishiBasho.rikishi_id == rikishi_id,
+        )
 
+        result = session.execute(query).scalars().first()
+        return result
+
+    @staticmethod
+    def find_basho(session: Session, basho_id: str) -> Basho | None:
         query = select(Basho).where(Basho.id == basho_id)
 
         result = session.execute(query).scalars().first()
-        session.close()
         return result
 
     @staticmethod
     def find_match(
+        session: Session,
         basho_id: str,
-        division: str,
+        day: int,
         id_one: int,
         id_two: int,
     ) -> Match | None:
-        session = get_session()
-
         query = select(Match).where(
             Match.basho_id == basho_id,
-            Match.division == division,
+            Match.day == day,
             or_(
                 (Match.east_id == id_one) & (Match.west_id == id_two),
                 (Match.east_id == id_two) & (Match.west_id == id_one),
             ),
         )
         result = session.execute(query).scalars().first()
-        session.close()
+        return result
+
+    @staticmethod
+    def find_basho_versus(
+        session: Session,
+        basho_id: str,
+        id_one: int,
+        id_two: int,
+    ) -> Match | None:
+        query = select(Match).where(
+            Match.basho_id == basho_id,
+            or_(
+                (Match.east_id == id_one) & (Match.west_id == id_two),
+                (Match.east_id == id_two) & (Match.west_id == id_one),
+            ),
+        )
+        result = session.execute(query).scalars().first()
         return result
 
 
 class DfQueries:
     @staticmethod
-    def rikishis() -> pd.DataFrame:
-        session = get_session()
-
+    def rikishis(session: Session) -> pd.DataFrame:
         query = session.query(Rikishi)
 
         compiled_query = query.statement.compile(
-            dialect=session.bind.dialect,
+            dialect=session.bind.dialect,  # type: ignore
             compile_kwargs={"literal_binds": True},
         )
 
         df = pd.read_sql(text(str(compiled_query)), session.bind)
-        session.close()
         return df
-    
-    @staticmethod
-    def matches() -> pd.DataFrame:
-        session = get_session()
 
+    @staticmethod
+    def matches(session: Session) -> pd.DataFrame:
         query = session.query(Match)
-        
+
         compiled_query = query.statement.compile(
-            dialect=session.bind.dialect,
+            dialect=session.bind.dialect,  # type: ignore
             compile_kwargs={"literal_binds": True},
         )
 
         df = pd.read_sql(text(str(compiled_query)), session.bind)
-        session.close()
         return df
 
     @staticmethod
@@ -122,13 +139,10 @@ class DfQueries:
 
         df = pd.read_sql(text(str(compiled_query)), session.bind)
 
-        session.close()
         return df
 
     @staticmethod
-    def basho_rikishi() -> pd.DataFrame:
-        session = get_session()
-
+    def basho_rikishi(session: Session) -> pd.DataFrame:
         query = (
             session.query(
                 Basho.id.label("basho_id"),
@@ -147,11 +161,10 @@ class DfQueries:
         )
 
         compiled_query = query.statement.compile(
-            dialect=session.bind.dialect,
+            dialect=session.bind.dialect,  # type: ignore
             compile_kwargs={"literal_binds": True},
         )
 
         df = pd.read_sql(text(str(compiled_query)), session.bind)
 
-        session.close()
         return df
