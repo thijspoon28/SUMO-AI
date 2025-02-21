@@ -1,5 +1,6 @@
 import pandas as pd
 
+from utils.estimate import estimate
 from utils.parsing import prev_basho_date  # type: ignore
 
 
@@ -30,23 +31,41 @@ def count_kimarite(df_rikishi: pd.DataFrame, df_matches: pd.DataFrame) -> pd.Dat
     return df
 
 
-def rikishi_winstreak(df_matches: pd.DataFrame, match_row: pd.Series, rikishi_id: int) -> pd.DataFrame:
-    is_on_streak = False
+def add_winstreaks(df_matches: pd.DataFrame) -> pd.DataFrame:
+    df_matches = df_matches.copy()  # Avoid modifying the original DataFrame
 
+    east_streaks = []
+    west_streaks = []
+
+    for _, match in estimate(df_matches.iterrows(), title="Winstreak"):
+        east_winstreak = rikishi_winstreak(df_matches, match, match["east_id"])
+        west_winstreak = rikishi_winstreak(df_matches, match, match["west_id"])
+
+        east_streaks.append(east_winstreak)
+        west_streaks.append(west_winstreak)
+
+    df_matches["east_winstreak"] = east_streaks
+    df_matches["west_winstreak"] = west_streaks
+
+    return df_matches
+
+
+def rikishi_winstreak(df_matches: pd.DataFrame, match_row: pd.Series, rikishi_id: int) -> pd.DataFrame:
     date = match_row["basho_id"], match_row["day"]
     date = prev_basho_date(date)
 
     won_matches = df_matches.loc[df_matches["winner_id"] == rikishi_id]
-    print(won_matches)
-    print(date)
-
     next_match = won_matches.loc[(won_matches["basho_id"] == date[0]) & (won_matches["day"] == date[1])]
-    print(next_match)
 
-    # not finding next match :(
+    streak = 0
 
-    while is_on_streak:
-        break
+    while not next_match.empty and next_match["winner_id"].iloc[0] == rikishi_id:
+        streak += 1
+
+        date = prev_basho_date(date)
+        next_match = won_matches.loc[(won_matches["basho_id"] == date[0]) & (won_matches["day"] == date[1])]
+    
+    return streak
 
 
 def rikishi_stats(df_matches: pd.DataFrame) -> pd.DataFrame:

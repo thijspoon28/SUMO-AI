@@ -4,12 +4,12 @@ import time
 
 # from pydantic import ValidationError
 from api.enums import Division
-from api.scraper import scramble_rikishi, scrape_all
+from api.scraper import scramble_rikishi, scrape_all, scrape_basho
 from api.sumo import SumoAPI
 from database.queries import DfQueries
-from utils.columns import count_kimarite, rikishi_winstreak
+from utils.columns import add_winstreaks, count_kimarite, rikishi_winstreak
 from utils.estimate import estimate
-from utils.parsing import next_basho_id, prev_basho_id, sumo_rank_to_value
+from utils.parsing import sumo_rank_to_value
 import api.schemas as schema
 
 
@@ -22,17 +22,53 @@ def tijmens_tests() -> None:
     # test_counting()
     # test_rank_value()
     # test_apis()
+    # test_scrape_bashos()
     # test_scraper()
     # test_rikishi_scrambler()
     test_winstreak()
 
     
 def test_winstreak():
-    df2 = DfQueries.matches()
-    row = df2.loc[1]
-    rikishi_id = row["winner_id"]
-    # print(df2)
-    rikishi_winstreak(df2, row, rikishi_id)
+    df = DfQueries.matches()
+    
+    bashos = ['199411', '199505', '199507', '199511', '199601', '199605', '199703', '199709',
+              '199711', '199801', '199803', '199805', '199807', '199809', '199811', '199901',
+              '199903', '199905', '199907', '199909', '199911', '200001', '200003', '200005',
+              '200007', '200009', '200011', '200101', '200103', '200105', '200107', '200109',
+              '200111', '200201', '200203', '200205', '200207', '200209', '200211', '200301',
+              '200303', '200305', '200307', '200309', '200311', '200401', '200403', '200405',
+              '200407', '200409', '200411', '200501', '200503', '200505', '200507', '200509',
+              '200511', '200601', '200603', '200605', '200607', '200609', '200611', '200701',
+              '200703', '200705', '200707', '200709', '200711', '200801', '200803', '200805',
+              '200807', '200809', '200811', '200901', '200903', '200905', '200907', '200909',
+              '200911', '201001', '201003', '201005', '201007', '201009', '201011', '201101',
+              '201105', '201107', '201109', '201111', '201201', '201203', '201205', '201207',
+              '201209', '201211', '201301', '201303', '201305', '201307', '201309', '201311',
+              '201401', '201403', '201405', '201407', '201409', '201411', '201501', '201503',
+              '201505', '201507', '201509', '201511', '201601', '201603', '201605', '201607',
+              '201609', '201611', '201701', '201703', '201705', '201707', '201709', '201711',
+              '201801', '201803', '201805', '201807', '201809', '201811', '201901', '201903',
+              '201905', '201907', '201909', '201911', '202001', '202003', '202007', '202009',
+              '202011', '202101', '202103', '202105', '202107', '202109', '202111', '202201',
+              '202203', '202205', '202207', '202209', '202211', '202301', '202303', '202305',
+              '202307', '202309', '202311', '202401', '202403', '202405', '202407', '202409',
+              '202411', '202501']
+    
+    allowed = ['201401', '201403', '201405', '201407', '201409', '201411', '201501', '201503',
+              '201505', '201507', '201509', '201511']
+
+    df = df.loc[df["basho_id"].isin(allowed)]
+    # df = df.loc[df["east_id"].isin(["202301", "202303", "202305", "202307", "202309", "202311"])]
+    # df = df.iloc[0:100]
+    df = df.drop(columns=["division", "match_no", "east_rank", "west_rank", "winner_jp", "kimarite"])
+    print(df)
+
+    df = add_winstreaks(df)
+    # print(df.iloc[0:50])
+    df = df.sort_values(["basho_id", "day"], ascending=True)
+    df = df.loc[(df["east_id"] == 3363) | (df["west_id"] == 3363)]
+    print()
+    print(df.to_string())
 
 
 def test_rikishi_scrambler():
@@ -56,6 +92,22 @@ def test_rikishi_scrambler():
 
 def test_scraper():
     scrape_all()
+
+def test_scrape_bashos():
+    s = 2010
+    e = 2015
+
+    
+    for i in estimate(range(s, e), title="Basho's"):
+        for j in estimate(range(1, 12, 2), title="Month"):
+            basho_id = f"{i}{j:0>{2}}"
+            print(basho_id)
+
+            if basho_id == "201103" or basho_id == "202005":
+                continue
+            
+            scrape_basho(basho_id, Division.Makuuchi.value)
+
 
 
 def misc():

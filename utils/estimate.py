@@ -40,8 +40,8 @@ class Estimator:
         self.title = title
         self.size = size
         self.iteration = 0
-        self.iteratable = iteratable
-        self.total = len(iteratable)  # type: ignore
+        self.iteratable = list(iteratable)
+        self.total = len(self.iteratable)
         self.start_time = time.time()
         self.times = [self.start_time]
         self.avg = 0.0

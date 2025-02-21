@@ -25,17 +25,6 @@ def main():
         return
 
 
-    for i in estimate(range(2010, 2025), title="Basho's"):
-        for j in estimate(range(1, 12, 2), title="Month"):
-            basho_id = f"{i}{j:0>{2}}"
-            print(basho_id)
-
-            if basho_id == "201103" or basho_id == "202005":
-                continue
-            
-            scrape_basho(basho_id, Division.Makuuchi.value)
-
-
 if __name__ == "__main__":
     try:
         main()
