@@ -7,7 +7,7 @@ from api.enums import Division
 from api.scraper import scramble_rikishi, scrape_all, scrape_basho
 from api.sumo import SumoAPI
 from database.queries import DfQueries
-from utils.columns import add_winstreaks, count_kimarite, rikishi_winstreak
+from utils.columns import add_winstreaks, add_winstreaks_v2, count_kimarite, rikishi_winstreak
 from utils.estimate import estimate
 from utils.parsing import sumo_rank_to_value
 import api.schemas as schema
@@ -57,18 +57,17 @@ def test_winstreak():
     allowed = ['201401', '201403', '201405', '201407', '201409', '201411', '201501', '201503',
               '201505', '201507', '201509', '201511']
 
-    df = df.loc[df["basho_id"].isin(allowed)]
-    # df = df.loc[df["east_id"].isin(["202301", "202303", "202305", "202307", "202309", "202311"])]
+    # df = df.loc[df["basho_id"].isin(allowed)]
     # df = df.iloc[0:100]
     df = df.drop(columns=["division", "match_no", "east_rank", "west_rank", "winner_jp", "kimarite"])
     print(df)
 
-    df = add_winstreaks(df)
-    # print(df.iloc[0:50])
+    df = add_winstreaks_v2(df)
     df = df.sort_values(["basho_id", "day"], ascending=True)
-    df = df.loc[(df["east_id"] == 3363) | (df["west_id"] == 3363)]
+    # df = df.loc[(df["east_id"] == 3363) | (df["west_id"] == 3363)]
     print()
-    print(df.to_string())
+    # print(df.to_string())
+    print(df)
 
 
 def test_rikishi_scrambler():

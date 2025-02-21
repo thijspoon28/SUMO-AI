@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from utils.estimate import estimate
@@ -31,18 +32,53 @@ def count_kimarite(df_rikishi: pd.DataFrame, df_matches: pd.DataFrame) -> pd.Dat
     return df
 
 
+def add_winstreaks_v2(df_matches: pd.DataFrame) -> pd.DataFrame:
+    # Sorting first, then re-indexing
+    df_matches = df_matches.sort_values(["basho_id", "day"], ascending=True)
+    df_matches = df_matches.copy().reset_index(drop=True)
+
+    east_streaks = np.zeros(len(df_matches), dtype=int)
+    west_streaks = np.zeros(len(df_matches), dtype=int)
+
+    winners: dict[int, int] = {}
+
+    for idx, match in estimate(df_matches.iterrows()):
+        east = match["east_id"]
+        west = match["west_id"]
+        
+        east_ws = winners.get(east, 0)
+        west_ws = winners.get(west, 0)
+
+        east_streaks[idx] = east_ws
+        west_streaks[idx] = west_ws
+
+        winner_id = match["winner_id"]
+
+        if winner_id == east:
+            winners[east] = east_ws + 1  # Increment east's streak
+            if west_ws: 
+                del winners[west]  # Reset west's streak to 0 because they lost
+        else:
+            winners[west] = west_ws + 1  # Increment west's streak
+            if east_ws: 
+                del winners[east]  # Reset east's streak to 0 because they lost
+
+    df_matches["east_winstreak"] = east_streaks
+    df_matches["west_winstreak"] = west_streaks
+
+    return df_matches
+
+
+
 def add_winstreaks(df_matches: pd.DataFrame) -> pd.DataFrame:
-    df_matches = df_matches.copy()  # Avoid modifying the original DataFrame
+    df_matches = df_matches.copy().reset_index(drop=True)  # Avoid modifying the original DataFrame
 
-    east_streaks = []
-    west_streaks = []
+    east_streaks = np.zeros(len(df_matches), dtype=int)
+    west_streaks = np.zeros(len(df_matches), dtype=int)
 
-    for _, match in estimate(df_matches.iterrows(), title="Winstreak"):
-        east_winstreak = rikishi_winstreak(df_matches, match, match["east_id"])
-        west_winstreak = rikishi_winstreak(df_matches, match, match["west_id"])
-
-        east_streaks.append(east_winstreak)
-        west_streaks.append(west_winstreak)
+    for idx, match in estimate(df_matches.iterrows()):
+        east_streaks[idx] = rikishi_winstreak(df_matches, match, match["east_id"])
+        west_streaks[idx] = rikishi_winstreak(df_matches, match, match["west_id"])
 
     df_matches["east_winstreak"] = east_streaks
     df_matches["west_winstreak"] = west_streaks
@@ -54,7 +90,7 @@ def rikishi_winstreak(df_matches: pd.DataFrame, match_row: pd.Series, rikishi_id
     date = match_row["basho_id"], match_row["day"]
     date = prev_basho_date(date)
 
-    won_matches = df_matches.loc[df_matches["winner_id"] == rikishi_id]
+    won_matches = df_matches.loc[df_matches["winner_id"].values == rikishi_id]
     next_match = won_matches.loc[(won_matches["basho_id"] == date[0]) & (won_matches["day"] == date[1])]
 
     streak = 0
