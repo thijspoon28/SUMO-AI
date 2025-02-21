@@ -1,4 +1,6 @@
-import pandas as pd  # type: ignore
+import pandas as pd
+
+from utils.parsing import prev_basho_date  # type: ignore
 
 
 def count_kimarite(df_rikishi: pd.DataFrame, df_matches: pd.DataFrame) -> pd.DataFrame:
@@ -27,7 +29,25 @@ def count_kimarite(df_rikishi: pd.DataFrame, df_matches: pd.DataFrame) -> pd.Dat
 
     return df
 
-# i dono, df2 was de matches table en jij ben vage redirects aan doen
+
+def rikishi_winstreak(df_matches: pd.DataFrame, match_row: pd.Series, rikishi_id: int) -> pd.DataFrame:
+    is_on_streak = False
+
+    date = match_row["basho_id"], match_row["day"]
+    date = prev_basho_date(date)
+
+    won_matches = df_matches.loc[df_matches["winner_id"] == rikishi_id]
+    print(won_matches)
+    print(date)
+
+    next_match = won_matches.loc[(won_matches["basho_id"] == date[0]) & (won_matches["day"] == date[1])]
+    print(next_match)
+
+    # not finding next match :(
+
+    while is_on_streak:
+        break
+
 
 def rikishi_stats(df_matches: pd.DataFrame) -> pd.DataFrame:
 

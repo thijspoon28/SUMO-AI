@@ -7,9 +7,9 @@ from api.enums import Division
 from api.scraper import scramble_rikishi, scrape_all
 from api.sumo import SumoAPI
 from database.queries import DfQueries
-from utils.columns import count_kimarite
+from utils.columns import count_kimarite, rikishi_winstreak
 from utils.estimate import estimate
-from utils.parsing import sumo_rank_to_value
+from utils.parsing import next_basho_id, prev_basho_id, sumo_rank_to_value
 import api.schemas as schema
 
 
@@ -22,8 +22,17 @@ def tijmens_tests() -> None:
     # test_counting()
     # test_rank_value()
     # test_apis()
-    test_scraper()
+    # test_scraper()
     # test_rikishi_scrambler()
+    test_winstreak()
+
+    
+def test_winstreak():
+    df2 = DfQueries.matches()
+    row = df2.loc[1]
+    rikishi_id = row["winner_id"]
+    # print(df2)
+    rikishi_winstreak(df2, row, rikishi_id)
 
 
 def test_rikishi_scrambler():

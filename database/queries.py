@@ -73,7 +73,9 @@ class Repo:
 
 class DfQueries:
     @staticmethod
-    def rikishis(session: Session) -> pd.DataFrame:
+    def rikishis() -> pd.DataFrame:
+        session = get_session()
+
         query = session.query(Rikishi)
 
         compiled_query = query.statement.compile(
@@ -85,7 +87,9 @@ class DfQueries:
         return df
 
     @staticmethod
-    def matches(session: Session) -> pd.DataFrame:
+    def matches() -> pd.DataFrame:
+        session = get_session()
+        
         query = session.query(Match)
 
         compiled_query = query.statement.compile(
@@ -142,7 +146,9 @@ class DfQueries:
         return df
 
     @staticmethod
-    def basho_rikishi(session: Session) -> pd.DataFrame:
+    def basho_rikishi() -> pd.DataFrame:
+        session = get_session()
+        
         query = (
             session.query(
                 Basho.id.label("basho_id"),

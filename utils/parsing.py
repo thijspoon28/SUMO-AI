@@ -25,3 +25,55 @@ def sumo_rank_to_value(rankString: str | None = None, **kwargs) -> int:
     except Exception as exc:
         print(rankString, exc)
         return 9999
+
+
+def next_basho_id(basho_id: str) -> str:
+    year = int(basho_id[:4])
+    month = int(basho_id[4:])
+
+    month += 2
+
+    if month > 12:
+        month = 1
+        year += 1
+
+    return f"{year}{month:0>{2}}"
+
+
+def prev_basho_id(basho_id: str) -> str:
+    year = int(basho_id[:4])
+    month = int(basho_id[4:])
+
+    month -= 2
+
+    if month < 0:
+        month = 11
+        year -= 1
+
+    return f"{year}{month:0>{2}}"
+
+
+def next_basho_date(basho_date: tuple[str, int]) -> tuple[str, int]:
+    basho_id = basho_date[0]
+    day = basho_date[1]
+
+    day += 1
+
+    if day > 15:
+        day = 1
+        basho_id = next_basho_id(basho_id)
+
+    return basho_id, day
+
+
+def prev_basho_date(basho_date: tuple[str, int]) -> tuple[str, int]:
+    basho_id = basho_date[0]
+    day = basho_date[1]
+
+    day -= 1
+
+    if day < 1:
+        day = 15
+        basho_id = prev_basho_id(basho_id)
+
+    return basho_id, day
