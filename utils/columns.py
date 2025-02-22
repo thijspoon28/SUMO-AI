@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 
 from utils.estimate import estimate
-from utils.parsing import prev_basho_date  # type: ignore
 
 
 def count_kimarite(df_rikishi: pd.DataFrame, df_matches: pd.DataFrame) -> pd.DataFrame:
@@ -99,6 +98,34 @@ def ratio_to_opponent(df_matches: pd.DataFrame):
 
     return df_matches
 
+
+def get_wins(df_matches: pd.DataFrame) -> pd.DataFrame:
+    df_matches = df_matches.sort_values(["basho_id", "day"], ascending=True).reset_index(drop=True)
+
+    east_wins = np.zeros(len(df_matches), dtype=int)
+    west_wins = np.zeros(len(df_matches), dtype=int)
+
+    wins: dict[int, int] = {}
+
+    for idx, match in estimate(df_matches.iterrows()):
+        east = match["east_id"]
+        west = match["west_id"]
+
+        east_w = wins.get(east, 0)
+        west_w = wins.get(west, 0)
+
+        if match["winner_id"] == east:
+            wins[east] = east_w + 1
+        else:
+            wins[west] = west_w + 1
+
+        east_wins[idx] = east_w
+        west_wins[idx] = west_w
+
+    df_matches["east_wins"] = east_wins
+    df_matches["west_wins"] = west_wins
+
+    return df_matches
 
 def rikishi_stats(df_matches: pd.DataFrame) -> pd.DataFrame:
 

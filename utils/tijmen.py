@@ -7,7 +7,7 @@ from api.enums import Division
 from api.scraper import scramble_rikishi, scrape_all, scrape_basho
 from api.sumo import SumoAPI
 from database.queries import DfQueries
-from utils.columns import add_winstreaks, count_kimarite, ratio_to_opponent
+from utils.columns import add_winstreaks, count_kimarite, get_wins, ratio_to_opponent
 from utils.estimate import estimate
 from utils.parsing import sumo_rank_to_value
 import api.schemas as schema
@@ -63,7 +63,7 @@ def test_ratios():
     df = df.drop(columns=["division", "match_no", "east_rank", "west_rank", "winner_jp", "kimarite"])
     print(df)
 
-    df = ratio_to_opponent(df)
+    df = get_wins(df)
     df = df.sort_values(["basho_id", "day"], ascending=True)
     # df = df.loc[(df["east_id"] == 3363) | (df["west_id"] == 3363)]
     print()
