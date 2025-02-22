@@ -32,7 +32,7 @@ def count_kimarite(df_rikishi: pd.DataFrame, df_matches: pd.DataFrame) -> pd.Dat
     return df
 
 
-def add_winstreaks_v2(df_matches: pd.DataFrame) -> pd.DataFrame:
+def add_winstreaks(df_matches: pd.DataFrame) -> pd.DataFrame:
     df_matches = df_matches.sort_values(["basho_id", "day"], ascending=True).reset_index(drop=True)
 
     east_streaks = np.zeros(len(df_matches), dtype=int)
@@ -65,39 +65,39 @@ def add_winstreaks_v2(df_matches: pd.DataFrame) -> pd.DataFrame:
     return df_matches
 
 
+def ratio_to_opponent(df_matches: pd.DataFrame):
+    df_matches = df_matches.sort_values(["basho_id", "day"], ascending=True).reset_index(drop=True)
 
-def add_winstreaks(df_matches: pd.DataFrame) -> pd.DataFrame:
-    df_matches = df_matches.copy().reset_index(drop=True)  # Avoid modifying the original DataFrame
+    east_ratios = np.zeros(len(df_matches), dtype=float)
+    west_ratios = np.zeros(len(df_matches), dtype=float)
 
-    east_streaks = np.zeros(len(df_matches), dtype=int)
-    west_streaks = np.zeros(len(df_matches), dtype=int)
+    matches: dict[int, dict[int, tuple[int, int]]] = {}
 
     for idx, match in estimate(df_matches.iterrows()):
-        east_streaks[idx] = rikishi_winstreak(df_matches, match, match["east_id"])
-        west_streaks[idx] = rikishi_winstreak(df_matches, match, match["west_id"])
+        east = match["east_id"]
+        west = match["west_id"]
 
-    df_matches["east_winstreak"] = east_streaks
-    df_matches["west_winstreak"] = west_streaks
+        if matches.get(east) is None:
+            matches[east] = {}
+        if matches.get(west) is None:
+            matches[west] = {}
+
+        east_m = matches[east].get(west, 0)
+        west_m = matches[west].get(east, 0)
+
+        if match["winner_id"] == east:
+            matches[east][west] = east_m + 1
+        else:
+            matches[west][east] = west_m + 1
+
+        t = east_m + west_m
+        east_ratios[idx] = east_m / t if t > 0 else 0.5
+        west_ratios[idx] = west_m / t if t > 0 else 0.5
+
+    df_matches["east_ratio"] = east_ratios
+    df_matches["west_ratio"] = west_ratios
 
     return df_matches
-
-
-def rikishi_winstreak(df_matches: pd.DataFrame, match_row: pd.Series, rikishi_id: int) -> pd.DataFrame:
-    date = match_row["basho_id"], match_row["day"]
-    date = prev_basho_date(date)
-
-    won_matches = df_matches.loc[df_matches["winner_id"].values == rikishi_id]
-    next_match = won_matches.loc[(won_matches["basho_id"] == date[0]) & (won_matches["day"] == date[1])]
-
-    streak = 0
-
-    while not next_match.empty and next_match["winner_id"].iloc[0] == rikishi_id:
-        streak += 1
-
-        date = prev_basho_date(date)
-        next_match = won_matches.loc[(won_matches["basho_id"] == date[0]) & (won_matches["day"] == date[1])]
-    
-    return streak
 
 
 def rikishi_stats(df_matches: pd.DataFrame) -> pd.DataFrame:
