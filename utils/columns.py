@@ -33,9 +33,7 @@ def count_kimarite(df_rikishi: pd.DataFrame, df_matches: pd.DataFrame) -> pd.Dat
 
 
 def add_winstreaks_v2(df_matches: pd.DataFrame) -> pd.DataFrame:
-    # Sorting first, then re-indexing
-    df_matches = df_matches.sort_values(["basho_id", "day"], ascending=True)
-    df_matches = df_matches.copy().reset_index(drop=True)
+    df_matches = df_matches.sort_values(["basho_id", "day"], ascending=True).reset_index(drop=True)
 
     east_streaks = np.zeros(len(df_matches), dtype=int)
     west_streaks = np.zeros(len(df_matches), dtype=int)
@@ -55,13 +53,11 @@ def add_winstreaks_v2(df_matches: pd.DataFrame) -> pd.DataFrame:
         winner_id = match["winner_id"]
 
         if winner_id == east:
-            winners[east] = east_ws + 1  # Increment east's streak
-            if west_ws: 
-                del winners[west]  # Reset west's streak to 0 because they lost
+            winners[east] = east_ws + 1
+            winners[west] = 0
         else:
-            winners[west] = west_ws + 1  # Increment west's streak
-            if east_ws: 
-                del winners[east]  # Reset east's streak to 0 because they lost
+            winners[west] = west_ws + 1
+            winners[east] = 0
 
     df_matches["east_winstreak"] = east_streaks
     df_matches["west_winstreak"] = west_streaks
