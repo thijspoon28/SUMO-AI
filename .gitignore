@@ -31,7 +31,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/  # didnt work >:(
+# !frontend/lib/
 lib64/
 parts/
 sdist/
