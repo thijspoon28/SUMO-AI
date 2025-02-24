@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from utils.estimate import estimate
+from database.queries import DfQueries
+# from utils.estimate import estimate
 
 
 def count_kimarite(df_rikishi: pd.DataFrame, df_matches: pd.DataFrame) -> pd.DataFrame:
@@ -39,7 +40,7 @@ def add_winstreaks(df_matches: pd.DataFrame) -> pd.DataFrame:
 
     winners: dict[int, int] = {}
 
-    for idx, match in estimate(df_matches.iterrows()):
+    for idx, match in df_matches.iterrows():
         east = match["east_id"]
         west = match["west_id"]
         
@@ -72,7 +73,7 @@ def ratio_to_opponent(df_matches: pd.DataFrame):
 
     matches: dict[int, dict[int, tuple[int, int]]] = {}
 
-    for idx, match in estimate(df_matches.iterrows()):
+    for idx, match in df_matches.iterrows():
         east = match["east_id"]
         west = match["west_id"]
 
@@ -107,7 +108,7 @@ def get_wins(df_matches: pd.DataFrame) -> pd.DataFrame:
 
     wins: dict[int, int] = {}
 
-    for idx, match in estimate(df_matches.iterrows()):
+    for idx, match in df_matches.iterrows():
         east = match["east_id"]
         west = match["west_id"]
 
@@ -162,23 +163,26 @@ def rikishi_stats(df_matches: pd.DataFrame) -> pd.DataFrame:
                 return wins
             
 
-    count = 0
-    ass = {'basho_id':[], 'rikishi_wins_this_basho':[], 'rikishi_wins_last_2_years':[], 'ratio_to_opponent':[], 'winstreak':[]}
-    df_out = pd.DataFrame(ass)
+    # count = 0
+    # ass = {'basho_id':[], 'rikishi_wins_this_basho':[], 'rikishi_wins_last_2_years':[], 'ratio_to_opponent':[], 'winstreak':[]}
+    # df_out = pd.DataFrame(ass)
 
-    for index, i in enumerate(df_matches['match_no']):
-        # print(df_matches.loc[df_matches.index[index], 'basho_id'], df_matches.loc[df_matches.index[index], 'day'], df_matches.loc[df_matches.index[index], 'match_no'])
-        # print(df_matches.loc[df_matches.index[index], 'east_rikishi_id'], df_matches.loc[df_matches.index[index], 'east_shikona'])
-        # print(df_matches.loc[df_matches.index[index], 'west_rikishi_id'], df_matches.loc[df_matches.index[index], 'west_shikona'])
-        e = df_matches.loc[df_matches.index[index], 'basho_id']
-        a = rikishi_wins_this_basho(df_matches.loc[df_matches.index[index], 'basho_id'], df_matches.loc[df_matches.index[index], 'day'], df_matches.loc[df_matches.index[index], 'east_rikishi_id'])
-        b = rikishi_wins_last_2_years(df_matches.loc[df_matches.index[index], 'basho_id'], df_matches.loc[df_matches.index[index], 'day'], df_matches.loc[df_matches.index[index], 'east_rikishi_id'])
-        c = ratio_to_opponent(df_matches.loc[df_matches.index[index], 'east_rikishi_id'], df_matches.loc[df_matches.index[index], 'west_rikishi_id'])
-        d = winstreak(df_matches.loc[df_matches.index[index], 'basho_id'], df_matches.loc[df_matches.index[index], 'day'], df_matches.loc[df_matches.index[index], 'east_rikishi_id'])
+    # for index, i in enumerate(df_matches['match_no']):
+    #     # print(df_matches.loc[df_matches.index[index], 'basho_id'], df_matches.loc[df_matches.index[index], 'day'], df_matches.loc[df_matches.index[index], 'match_no'])
+    #     # print(df_matches.loc[df_matches.index[index], 'east_rikishi_id'], df_matches.loc[df_matches.index[index], 'east_shikona'])
+    #     # print(df_matches.loc[df_matches.index[index], 'west_rikishi_id'], df_matches.loc[df_matches.index[index], 'west_shikona'])
+    #     e = df_matches.loc[df_matches.index[index], 'basho_id']
+    #     a = rikishi_wins_this_basho(df_matches.loc[df_matches.index[index], 'basho_id'], df_matches.loc[df_matches.index[index], 'day'], df_matches.loc[df_matches.index[index], 'east_rikishi_id'])
+    #     b = rikishi_wins_last_2_years(df_matches.loc[df_matches.index[index], 'basho_id'], df_matches.loc[df_matches.index[index], 'day'], df_matches.loc[df_matches.index[index], 'east_rikishi_id'])
+    #     c = ratio_to_opponent(df_matches.loc[df_matches.index[index], 'east_rikishi_id'], df_matches.loc[df_matches.index[index], 'west_rikishi_id'])
+    #     d = winstreak(df_matches.loc[df_matches.index[index], 'basho_id'], df_matches.loc[df_matches.index[index], 'day'], df_matches.loc[df_matches.index[index], 'east_rikishi_id'])
         
         
-        df_out.loc[len(df_out.index)] = [e, a, b, c, d]
-        count += 1
-        if count > 10:
-            break
-    return df_out 
+    #     df_out.loc[len(df_out.index)] = [e, a, b, c, d]
+    #     count += 1
+    #     if count > 10:
+    #         break
+    # return df_out 
+
+
+
