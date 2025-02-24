@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
+import navbar from './components/Navbar.vue';
+import BreadCrumb from './components/BreadCrumb.vue';
 </script>
 
 <template>
   <header>
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-        <RouterLink to="/test">Test</RouterLink>
-      </nav>
-    </div>
+    <navbar />
+    <BreadCrumb />
   </header>
 
   <RouterView />
