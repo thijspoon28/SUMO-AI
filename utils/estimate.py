@@ -86,8 +86,6 @@ class Estimator:
             print(line)
 
     def stats(self) -> None:
-        self.size = os.get_terminal_size()
-
         cur = time.time()
         total = cur - self.start_time
         last = cur - self.times[-1]
@@ -157,12 +155,18 @@ class EstimatorManager:
     def __init__(self):
         self.estimators: dict[int, Estimator] = {}  # type: ignore
         self.count = 0
-        self.size = os.get_terminal_size()
         self.sys_stdout_write = None
         self.sys_stdout_flush = None
         self.log: list[str] = [""]  # type: ignore
         self.new_log = False
         self.disable_terminal_chomp_chomp_value = False
+
+        self.active = True
+        
+        try:
+            self.size = os.get_terminal_size()
+        except Exception:
+            self.active = False
 
     def push_log(self, string: str | None = None, end: bool = False):
         if end and self.log[-1]:
@@ -284,6 +288,10 @@ class EstimatorManager:
         for estimator in self.estimators.values():
             estimator.disable_terminal_chomp_chomp = value
 
+    def default_gen(self, iteratable: Iterable) -> Generator:
+        for _ in iteratable:
+            yield _
+
     def estimate(
         self,
         iteratable: Iterable,
@@ -291,6 +299,9 @@ class EstimatorManager:
         disable_terminal_chomp_chomp: bool | None = False,
         length: int | None = None
     ) -> Generator:
+        if not self.active:
+            return self.default_gen(iteratable)
+        
         self.count += 1
 
         if disable_terminal_chomp_chomp is not None:
@@ -316,7 +327,7 @@ class EstimatorManager:
 
         self.add(self.count, estimator)
 
-        return estimator.iterate()  # This is where the generator runs.
+        return estimator.iterate()
     
 
 manager = EstimatorManager()

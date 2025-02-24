@@ -6,6 +6,10 @@ def include_root():
     notebook_dir = os.getcwd()
     project_root = os.path.abspath(os.path.join(notebook_dir, ".."))  # Adjust if needed
 
+    if project_root.endswith("SUMO-AI"):
+        print(f"Project root: {project_root} (Unchanged)")
+        return
+
     # Change the working directory to the project root
     os.chdir(project_root)
 

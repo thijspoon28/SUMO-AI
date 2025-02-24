@@ -44,7 +44,9 @@ def test_move_count():
     df = df.drop(columns=["division", "match_no", "east_rank", "west_rank", "winner_jp", "east_shikona", "west_shikona"])
     print(df)
 
-    df = top_moves(df, 3)
+    print(len(df))
+    df = top_moves(df, 1)
+
     # df = mark_winner(df)
     # df = df.loc[(df["east_id"] == 3363) | (df["west_id"] == 3363)]
     print()
