@@ -35,13 +35,14 @@ class Estimator:
         sys_stdout_write: Callable,
         sys_stdout_flush: Callable,
         disable_terminal_chomp_chomp: bool,
+        length: int | None = None
     ):
         self.level = level
         self.title = title
         self.size = size
         self.iteration = 0
-        self.iteratable = list(iteratable)
-        self.total = len(self.iteratable)
+        self.iteratable = iteratable
+        self.total = len(list(iteratable)) if length is None else length
         self.start_time = time.time()
         self.times = [self.start_time]
         self.avg = 0.0
@@ -288,6 +289,7 @@ class EstimatorManager:
         iteratable: Iterable,
         title: str = "Loop",
         disable_terminal_chomp_chomp: bool | None = False,
+        length: int | None = None
     ) -> Generator:
         self.count += 1
 
@@ -309,6 +311,7 @@ class EstimatorManager:
             sys_stdout_write=self.sys_stdout_write,
             sys_stdout_flush=self.sys_stdout_flush,
             disable_terminal_chomp_chomp=self.disable_terminal_chomp_chomp_value,
+            length=length
         )
 
         self.add(self.count, estimator)
@@ -326,9 +329,11 @@ def estimate(
     iterable: Iterable[T],
     title: str = "Loop",
     disable_terminal_chomp_chomp: bool | None = None,
+    length: int | None = None
 ) -> Generator[T, None, None]:
     return manager.estimate(
         iterable,
         title=title,
         disable_terminal_chomp_chomp=disable_terminal_chomp_chomp,
+        length=length,
     )
