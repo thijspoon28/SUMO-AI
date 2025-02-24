@@ -82,6 +82,14 @@ def rikishi_shikonas(rikishi_id: int, scrape: bool = False):
     return shikonas
 
 
+def create_missing_rikishi(rikishi_id: int):
+    rikishi = scramble_rikishi(rikishi_id, True, True, True)
+
+    session = get_session()
+    session.add(rikishi)
+    session.close()
+
+
 def scramble_rikishi(
     rikishi_id: int,
     incl_measurements: bool = False,

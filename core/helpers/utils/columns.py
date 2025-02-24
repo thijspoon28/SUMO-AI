@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd  # type: ignore
 
+from core.db import get_session
+from core.db.models import Rikishi
+from core.external_api.scraper import scramble_rikishi
 from core.helpers.utils.estimate import estimate
 from core.helpers.utils.parsing import kimarite_to_value
 
@@ -293,11 +296,62 @@ def top_moves(df_matches: pd.DataFrame, top_amount: int) -> pd.DataFrame:
     return df_matches
 
 
-def rikishi_stats(df_matches: pd.DataFrame) -> pd.DataFrame:
-    df_matches = get_wins(df_matches)
-    df_matches = ratio_to_opponent(df_matches)
-    df_matches = add_winstreaks(df_matches)
+def rikishi_stats(df_matches: pd.DataFrame, fix_missing: bool = False) -> pd.DataFrame:
+    session = get_session()
+    rikishi_lookup = {rikishi.id: rikishi for rikishi in session.query(Rikishi).all()}
 
-    df_matches = top_moves(df_matches, 1)
+    df_matches = df_matches.copy()
+
+    east_weights = np.zeros(len(df_matches), dtype=int)
+    east_heights = np.zeros(len(df_matches), dtype=int)
+    west_weights = np.zeros(len(df_matches), dtype=int)
+    west_heights = np.zeros(len(df_matches), dtype=int)
+
+    for idx, match in estimate(df_matches.iterrows(), length=len(df_matches)):
+        east = match["east_id"]
+        west = match["west_id"]
+
+        try:
+            r_east = rikishi_lookup[east]
+            
+        except KeyError:
+            if fix_missing:
+                r_east = scramble_rikishi(east)
+                session.add(r_east)
+                rikishi_lookup[east] = r_east
+                print(f"Rikishi '{east}' is being added.")
+                session.commit()
+
+            else:
+                east_weights[idx] = None
+                east_heights[idx] = None
+
+        else:
+            east_weights[idx] = r_east.weight
+            east_heights[idx] = r_east.height
+            
+        try:
+            r_west = rikishi_lookup[west]
+
+        except KeyError:
+            if fix_missing:
+                print(f"Rikishi '{west}' is being added.")
+                r_west = scramble_rikishi(west)
+                session.add(r_west)
+                rikishi_lookup[west] = r_west
+                session.commit()
+
+            else:
+                west_weights[idx] = None
+                west_heights[idx] = None
+
+        else:
+            west_weights[idx] = r_west.weight
+            west_heights[idx] = r_west.height
+
+    df_matches["east_weight"] = east_weights
+    df_matches["east_height"] = east_heights
+    df_matches["west_weight"] = west_weights
+    df_matches["west_height"] = west_heights
 
     return df_matches

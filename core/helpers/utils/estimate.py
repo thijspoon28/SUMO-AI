@@ -47,6 +47,7 @@ class Estimator:
         self.times = [self.start_time]
         self.avg = 0.0
         self.force_update = time.time()
+        self.last_estimate = "Unknown"
 
         self.finish_callback = finish_callback
         self.update_callback = update_callback
@@ -91,7 +92,8 @@ class Estimator:
         last = cur - self.times[-1]
 
         self.times.append(cur)
-        percent = self.iteration / self.total * 100
+
+        estimate = self.calculate_estimate(last)
 
         if last < 0.02 and self.iteration != self.total:
             if self.force_update < cur:
@@ -99,10 +101,10 @@ class Estimator:
             else:
                 return
 
+        percent = self.iteration / self.total * 100
         spacing = "  " * self.level
         completion = f"{self.iteration} / {self.total} ({percent:5.1f}%)"
 
-        estimate = self.calculate_estimate(last)
         line = f"{spacing}> {self.title} - {completion} - {total=:.2f}s - {last=:.2f}s - estimate={estimate}"
 
         if not self.disable_terminal_chomp_chomp:
@@ -120,22 +122,30 @@ class Estimator:
             self.move(1, self.level + 3)
 
     def calculate_estimate(self, last: float) -> str:
-        lookback = int(self.total * 0.05)
+        # Dynamically determine when to update the estimate
+        if abs(last - self.avg) < 0.01 and self.iteration % max(1, int(self.total * 0.001)) != 0:
+            return self.last_estimate  # Reuse the last computed estimate if no significant change
+
+        lookback = min(len(self.times), max(10, int(self.total * 0.05)))  # Ensure a reasonable window size
         times = self.times[-lookback:]
-        avg_diff = (
-            sum(times[i] - times[i - 1] for i in range(1, len(times)))
-            / (len(times) - 1)
-            if len(times) > 1
-            else 0
-        )
+
+        if len(times) > 1:
+            avg_diff = sum(times[i] - times[i - 1] for i in range(1, len(times))) / (len(times) - 1)
+        else:
+            avg_diff = last  # Use the last iteration time if insufficient data
+
         linear_estimation = self.start_time + avg_diff * self.total
         self.avg = ((self.avg * (self.iteration - 1)) + last) / self.iteration
         avg_estimation = self.start_time + self.total * self.avg
 
-        estimate = (linear_estimation + avg_estimation) / 2
-        dt = datetime.datetime.fromtimestamp(estimate)
+        # Adaptive weighting: prioritize the method with lower variance
+        weight_linear = min(1, max(0, len(times) / lookback))
+        estimate = (weight_linear * linear_estimation) + ((1 - weight_linear) * avg_estimation)
 
-        return dt.strftime('%d-%m-%Y %H:%M:%S')
+        dt = datetime.datetime.fromtimestamp(estimate)
+        self.last_estimate = dt.strftime('%d-%m-%Y %H:%M:%S')  # Cache last estimate
+
+        return self.last_estimate
     
     def iterate(self) -> Generator:
         self.start()
