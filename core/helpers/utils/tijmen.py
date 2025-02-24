@@ -2,8 +2,6 @@ import random
 import sys
 import time
 
-from core.db import get_engine
-from core.db.models import User
 from core.external_api.enums import Division
 from core.external_api.scraper import scramble_rikishi, scrape_all, scrape_basho
 from core.external_api.sumo import SumoAPI

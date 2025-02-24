@@ -30,7 +30,7 @@ class BaseRepository(Generic[Model]):
         result = self.session.execute(query)
         return result.scalars().all()
 
-    def get_by_id(self, model_id: int) -> Optional[Model]:
+    def get_by_id(self, model_id) -> Optional[Model]:
         query = select(self.model).where(self.model.id == model_id)
         query = self.query_options(query)
         result = self.session.execute(query)
@@ -38,7 +38,7 @@ class BaseRepository(Generic[Model]):
 
     def update_by_id(
         self,
-        model_id: int,
+        model_id,
         params: dict,
     ) -> None:
         query = (
@@ -56,7 +56,7 @@ class BaseRepository(Generic[Model]):
 
     def delete_by_id(
         self,
-        model_id: int,
+        model_id,
     ) -> None:
         query = (
             delete(self.model)

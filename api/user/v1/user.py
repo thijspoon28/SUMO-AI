@@ -33,8 +33,6 @@ async def get_users(session: Session = Depends(get_db)):
     return await UserService(session).get_users()
 
 
-# print(f"Type of IsAdmin: {type(IsAdmin())}")
-# print(f"Type of OR: {type(OR)}")
 @user_v1_router.get(
     "/{user_id}",
     response_model=UserSchema,
