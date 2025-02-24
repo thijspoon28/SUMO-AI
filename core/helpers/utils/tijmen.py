@@ -8,7 +8,7 @@ from core.external_api.enums import Division
 from core.external_api.scraper import scramble_rikishi, scrape_all, scrape_basho
 from core.external_api.sumo import SumoAPI
 from database.queries import DfQueries
-from core.helpers.utils.columns import add_winstreaks, count_kimarite, get_wins, top_moves
+from core.helpers.utils.columns import add_winstreaks, count_kimarite, get_wins, rikishi_stats, top_moves
 from core.helpers.utils.estimate import estimate
 from core.helpers.utils.parsing import sumo_rank_to_value
 import core.external_api.schemas as schema
@@ -17,13 +17,6 @@ import core.external_api.schemas as schema
 def tijmens_tests() -> None:
     ...
 
-    User.__table__.create(get_engine())
-
-    # api = SumoAPI()
-    # kim = api.get_kimarite(ascending=False)
-
-    # for idx, i in enumerate(kim.records):
-    #     print(f'{idx+1}: "{i.kimarite}",')
 
     # misc()
     # test_estimator()
@@ -36,6 +29,16 @@ def tijmens_tests() -> None:
     # test_winstreak()
     # test_ratios()
     # test_move_count()
+    test_rikishi_stats()
+
+
+def test_rikishi_stats():
+    df = DfQueries.matches()
+    df = df.drop(columns=["division", "match_no", "east_rank", "west_rank", "winner_jp", "east_shikona", "west_shikona"])
+    print(df)
+    df = rikishi_stats(df, fix_missing=True)
+    print(df)
+
 
 
 def test_move_count():
