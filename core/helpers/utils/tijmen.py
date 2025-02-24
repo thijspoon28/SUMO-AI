@@ -2,19 +2,22 @@ import random
 import sys
 import time
 
-# from pydantic import ValidationError
-from external_api.enums import Division
-from external_api.scraper import scramble_rikishi, scrape_all, scrape_basho
-from external_api.sumo import SumoAPI
+from core.db import get_engine
+from core.db.models import User
+from core.external_api.enums import Division
+from core.external_api.scraper import scramble_rikishi, scrape_all, scrape_basho
+from core.external_api.sumo import SumoAPI
 from database.queries import DfQueries
-from utils.columns import add_winstreaks, count_kimarite, get_wins, top_moves
-from utils.estimate import estimate
-from utils.parsing import sumo_rank_to_value
-import external_api.schemas as schema
+from core.helpers.utils.columns import add_winstreaks, count_kimarite, get_wins, top_moves
+from core.helpers.utils.estimate import estimate
+from core.helpers.utils.parsing import sumo_rank_to_value
+import core.external_api.schemas as schema
 
 
 def tijmens_tests() -> None:
     ...
+
+    User.__table__.create(get_engine())
 
     # api = SumoAPI()
     # kim = api.get_kimarite(ascending=False)
@@ -32,7 +35,7 @@ def tijmens_tests() -> None:
     # test_rikishi_scrambler()
     # test_winstreak()
     # test_ratios()
-    test_move_count()
+    # test_move_count()
 
 
 def test_move_count():

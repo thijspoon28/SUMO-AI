@@ -1,28 +1,34 @@
 import os
+import uvicorn
 
-from dotenv import load_dotenv
+from core.config import config
 
-load_dotenv()
-
-from external_api.enums import Division  # noqa: E402
-from external_api.scraper import scrape_basho  # noqa: E402
-from database.session import init_db  # noqa: E402
-from utils.estimate import estimate, manager  # noqa: E402
-from utils.tijmen import tijmens_tests  # noqa: E402
-from utils.thijs import thijs_tests  # noqa: E402
+from core.db import init_db  # noqa: E402
+from core.helpers.utils.estimate import manager  # noqa: E402
+from core.helpers.utils.tijmen import tijmens_tests  # noqa: E402
+from core.helpers.utils.thijs import thijs_tests  # noqa: E402
 
 
 def main():
-    init_db(delete=False)
+    app = os.getenv("APP")
 
-
-    if os.getenv("USER") == "TIJMEN":
+    if app == "TIJMEN":
+        init_db(delete=False)
         tijmens_tests()
         return
 
-    if os.getenv("USER") == "THIJS":
+    if app == "THIJS":
+        init_db(delete=False)
         thijs_tests()
         return
+    
+    uvicorn.run(
+        app="app.server:app",
+        host=config.APP_HOST,
+        port=config.APP_PORT,
+        reload=config.ENV != "production",
+        workers=1,
+    )
 
 
 if __name__ == "__main__":

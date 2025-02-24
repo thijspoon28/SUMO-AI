@@ -2,7 +2,7 @@
 
 
 from database.queries import DfQueries
-from utils.columns import count_kimarite
+from core.helpers.utils.columns import count_kimarite
 
 
 def thijs_tests() -> None:

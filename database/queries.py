@@ -1,7 +1,7 @@
 from sqlalchemy import or_, select, text
 from sqlalchemy.orm import aliased, Session
-from database.models import Basho, Match, Rikishi, RikishiBasho
-from database.session import get_session
+from core.db.models import Basho, Match, Rikishi, RikishiBasho
+from core.db import get_session
 import pandas as pd  # type: ignore
 
 

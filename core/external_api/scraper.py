@@ -1,6 +1,6 @@
 from pydantic import ValidationError
-from external_api.response_schemas import BashoResponse
-from database.models import (
+from core.external_api.response_schemas import BashoResponse
+from core.db.models import (
     Basho,
     Match,
     Measurement,
@@ -10,11 +10,11 @@ from database.models import (
     Shikona,
 )
 from database.queries import Repo
-from database.session import get_session
-from external_api.enums import Division
-from external_api.sumo import SumoAPI
-import external_api.schemas as schema
-from utils.estimate import estimate
+from core.db import get_session
+from core.external_api.enums import Division
+from core.external_api.sumo import SumoAPI
+import core.external_api.schemas as schema
+from core.helpers.utils.estimate import estimate
 
 
 def log_missing_rikishi(rikishi_id: int):

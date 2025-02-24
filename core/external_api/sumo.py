@@ -2,8 +2,23 @@ from typing import Any, Type, TypeVar, get_args, get_origin, overload
 from pydantic import BaseModel
 import requests  # type: ignore
 
-from external_api.enums import Division, SortFields
-from external_api.response_schemas import BaseResponse, BashoBanzukeResponse, BashoResponse, BashoTorikumiResponse, KimariteMatchesResponse, KimariteResponse, MeasurementResponse, RankResponse, RikishiMatchesResponse, RikishiResponse, RikishiStatsResponse, RikishiVersusResponse, RikishisResponse, ShikonaResponse
+from core.external_api.enums import Division, SortFields
+from core.external_api.response_schemas import (
+    BaseResponse,
+    BashoBanzukeResponse,
+    BashoResponse,
+    BashoTorikumiResponse,
+    KimariteMatchesResponse,
+    KimariteResponse,
+    MeasurementResponse,
+    RankResponse,
+    RikishiMatchesResponse,
+    RikishiResponse,
+    RikishiStatsResponse,
+    RikishiVersusResponse,
+    RikishisResponse,
+    ShikonaResponse,
+)
 
 
 T = TypeVar("T", bound=BaseResponse)
@@ -14,22 +29,12 @@ class SumoAPI:
 
     @overload
     @classmethod
-    def request(
-        cls,
-        url: str,
-        *,
-        schema: Type[T],
-        params: dict | None = None
-    ) -> T: ...
+    def request(cls, url: str, *, schema: Type[T], params: dict | None = None) -> T: ...
 
     @overload
     @classmethod
     def request(
-        cls,
-        url: str,
-        *,
-        schema: None = None,
-        params: dict | None = None
+        cls, url: str, *, schema: None = None, params: dict | None = None
     ) -> dict: ...
 
     @classmethod
@@ -61,7 +66,7 @@ class SumoAPI:
 
         if not schema:
             return data
-        
+
         result = schema(
             skip=params["skip"],
             limit=params["limit"],
@@ -81,9 +86,13 @@ class SumoAPI:
             else:
                 result.records = []
 
-        elif isinstance(data, dict) and data.get("limit") is not None and data.get("records") is None:
+        elif (
+            isinstance(data, dict)
+            and data.get("limit") is not None
+            and data.get("records") is None
+        ):
             result.records = []
-        
+
         elif isinstance(data, list):
             result.has_result = True
             record_type = schema.__annotations__["records"]
@@ -94,9 +103,9 @@ class SumoAPI:
 
             if get_origin(record_type) is list:
                 record_type = get_args(record_type)[0]
-                
+
             result.records = [record_type(**item) for item in data]
-        
+
         else:
             result.has_result = True
             record_type = schema.__annotations__["record"].__args__[0]
@@ -130,9 +139,13 @@ class SumoAPI:
             result.limit += amount
             params["skip"] += amount
 
-            result.records = data.records if result.records is None else result.records + data.records
+            result.records = (
+                data.records
+                if result.records is None
+                else result.records + data.records
+            )
             print(f"Retrieved {len(result.records)} (+{amount}) records.")
-        
+
         return result
 
     def get_rikishis(
@@ -169,7 +182,7 @@ class SumoAPI:
 
         url = f"{cls.BASE_URL}/api/rikishis"
         params: dict[str, Any] = {}
-        
+
         params["intai"] = True
 
         if shikonaEn:
@@ -218,7 +231,7 @@ class SumoAPI:
         """
         url = f"{cls.BASE_URL}/api/rikishi/{rikishi_id}"
         params: dict[str, Any] = {}
-        
+
         params["intai"] = True
 
         if measurements is not None:

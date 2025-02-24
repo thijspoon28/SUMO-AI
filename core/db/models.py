@@ -1,11 +1,23 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, JSON
-from sqlalchemy.orm import relationship, declarative_base, Mapped
+from sqlalchemy import Boolean, Column, Integer, String, Float, ForeignKey, DateTime, JSON
+from sqlalchemy.orm import relationship, Mapped
+
+from core.db.mixins import TimestampMixin
+from core.db import Base
 
 
-Base = declarative_base()
+class User(Base, TimestampMixin):
+    __tablename__ = "user"
+
+    id: Mapped[int] = Column(Integer, primary_key=True)
+    username: Mapped[str] = Column(String, nullable=False)
+    password: Mapped[str] = Column(String, nullable=False)
+    is_admin: Mapped[bool] = Column(Boolean, default=False)
+
+    def __repr__(self) -> str:
+        return f"User('{self.username}')"
 
 
-class Measurement(Base):  # type: ignore
+class Measurement(Base):
     __tablename__ = "measurement"
 
     basho_id = Column(String, ForeignKey("basho.id"), primary_key=True)

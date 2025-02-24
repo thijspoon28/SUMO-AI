@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd  # type: ignore
 
-from utils.estimate import estimate
-from utils.parsing import kimarite_to_value
+from core.helpers.utils.estimate import estimate
+from core.helpers.utils.parsing import kimarite_to_value
 
 
 def count_kimarite(df_rikishi: pd.DataFrame, df_matches: pd.DataFrame) -> pd.DataFrame:
