@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import navbar from './components/Navbar.vue';
+import { RouterView } from 'vue-router'
+import NavBar from './components/NavBar.vue';
 import BreadCrumb from './components/BreadCrumb.vue';
 </script>
 
 <template>
   <header>
-    <navbar />
+    <NavBar />
     <BreadCrumb />
   </header>
 

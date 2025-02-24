@@ -3,8 +3,8 @@
     <p v-if="loading">Loading...</p>
     <p v-else-if="error"> {{ error.message }}</p>
     <template v-else>     
-        <div v-for="(person, index) in people" :key="index" class="year-box">
-          <h1>Year: {{ index }}</h1>
+        <div v-for="(basho, index) in bashos" :key="index" class="year-box">
+          <h1>Year: {{ index }} {{ basho.date }}</h1>
           <p>Basho 1</p>
           <p>Basho 2</p>
           <p>Basho 3</p>
@@ -18,11 +18,11 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import usePeople from '@/composables/usePeople.ts'
-const { people, loading, error, fetchPeople } = usePeople();
+import useBasho from '@/composables/useBashos';
+const { bashos, loading, error, fetchBashos } = useBasho();
 
 onMounted(() => {
-  fetchPeople()
+  fetchBashos()
 })
 </script>
 
