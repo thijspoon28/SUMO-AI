@@ -2,8 +2,8 @@ from typing import Any, Type, TypeVar, get_args, get_origin, overload
 from pydantic import BaseModel
 import requests  # type: ignore
 
-from api.enums import Division, SortFields
-from api.response_schemas import BaseResponse, BashoBanzukeResponse, BashoResponse, BashoTorikumiResponse, KimariteMatchesResponse, KimariteResponse, MeasurementResponse, RankResponse, RikishiMatchesResponse, RikishiResponse, RikishiStatsResponse, RikishiVersusResponse, RikishisResponse, ShikonaResponse
+from external_api.enums import Division, SortFields
+from external_api.response_schemas import BaseResponse, BashoBanzukeResponse, BashoResponse, BashoTorikumiResponse, KimariteMatchesResponse, KimariteResponse, MeasurementResponse, RankResponse, RikishiMatchesResponse, RikishiResponse, RikishiStatsResponse, RikishiVersusResponse, RikishisResponse, ShikonaResponse
 
 
 T = TypeVar("T", bound=BaseResponse)

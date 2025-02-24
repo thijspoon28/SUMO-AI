@@ -1,5 +1,5 @@
 from pydantic import ValidationError
-from api.response_schemas import BashoResponse
+from external_api.response_schemas import BashoResponse
 from database.models import (
     Basho,
     Match,
@@ -11,9 +11,9 @@ from database.models import (
 )
 from database.queries import Repo
 from database.session import get_session
-from api.enums import Division
-from api.sumo import SumoAPI
-import api.schemas as schema
+from external_api.enums import Division
+from external_api.sumo import SumoAPI
+import external_api.schemas as schema
 from utils.estimate import estimate
 
 

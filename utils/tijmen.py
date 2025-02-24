@@ -3,14 +3,14 @@ import sys
 import time
 
 # from pydantic import ValidationError
-from api.enums import Division
-from api.scraper import scramble_rikishi, scrape_all, scrape_basho
-from api.sumo import SumoAPI
+from external_api.enums import Division
+from external_api.scraper import scramble_rikishi, scrape_all, scrape_basho
+from external_api.sumo import SumoAPI
 from database.queries import DfQueries
-from utils.columns import add_winstreaks, count_kimarite, get_wins, mark_winner, top_moves
+from utils.columns import add_winstreaks, count_kimarite, get_wins, top_moves
 from utils.estimate import estimate
 from utils.parsing import sumo_rank_to_value
-import api.schemas as schema
+import external_api.schemas as schema
 
 
 def tijmens_tests() -> None:
