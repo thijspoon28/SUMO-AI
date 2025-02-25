@@ -1,5 +1,6 @@
 import os
 import uvicorn
+import click
 
 from core.config import config
 
@@ -9,10 +10,17 @@ from core.helpers.utils.tijmen import tijmens_tests  # noqa: E402
 from core.helpers.utils.thijs import thijs_tests  # noqa: E402
 
 
-def main():
+@click.command()
+@click.option(
+    "--tijmen",
+    type=click.BOOL,
+    is_flag=True,
+    default=False,
+)
+def main(tijmen: bool = False):
     app = os.getenv("APP")
 
-    if app == "TIJMEN":
+    if tijmen or app == "TIJMEN":
         init_db(delete=False)
         tijmens_tests()
         return
