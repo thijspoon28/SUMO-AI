@@ -1,7 +1,7 @@
 from app.match.schemas.match import CreateMatchSchema, UpdateMatchSchema
 from app.auth.services.utils import get_password_hash
 from app.match.exceptions.match import DuplicateMatchnameException, MatchNotFoundException
-from app.match.repository.match import MatchRepository
+from app.match.repositories.match import MatchRepository
 from core.db.models import Match
 
 

@@ -1,7 +1,7 @@
 from app.user.schemas.user import CreateUserSchema, UpdateUserSchema
 from app.auth.services.utils import get_password_hash
 from app.user.exceptions.user import DuplicateUsernameException, UserNotFoundException
-from app.user.repository.user import UserRepository
+from app.user.repositories.user import UserRepository
 from core.db.models import User
 
 

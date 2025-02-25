@@ -1,6 +1,6 @@
 from app.basho.schemas.basho import BashoSchema, CreateBashoSchema, UpdateBashoSchema
 from app.basho.exceptions.basho import BashoNotFoundException
-from app.basho.repository.basho import BashoRepository
+from app.basho.repositories.basho import BashoRepository
 
 
 class BashoService:

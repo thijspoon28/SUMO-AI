@@ -13,7 +13,7 @@ Model = TypeVar("Model", bound=Base)
 
 class BaseRepository(Generic[Model]):
     """
-    A generic repository that provides basic database operations for a given SQLAlchemy 
+    A generic repositories that provides basic database operations for a given SQLAlchemy 
     model.
     """
 

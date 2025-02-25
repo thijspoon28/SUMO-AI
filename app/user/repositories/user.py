@@ -1,10 +1,10 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from core.db.models import User
-from core.repository.base import BaseRepository
+from core.repositories.base import Baserepositories
 
 
-class UserRepository(BaseRepository):
+class UserRepository(Baserepositories):
     def __init__(self, session: Session):
         super().__init__(User, session)
 

@@ -1,10 +1,10 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 from core.db.models import Basho
-from core.repository.base import BaseRepository
+from core.repositories.base import Baserepositories
 
 
-class BashoRepository(BaseRepository):
+class BashoRepository(Baserepositories):
     def __init__(self, session: Session):
         super().__init__(Basho, session)
 
