@@ -4,13 +4,13 @@
     <p v-else-if="error"> {{ error.message }}</p>
     <template v-else>     
         <div v-for="(basho, index) in bashos" :key="index" class="year-box">
-          <h1>Year: {{ index }} {{ basho.date }}</h1>
-          <p>Basho 1</p>
-          <p>Basho 2</p>
-          <p>Basho 3</p>
-          <p>Basho 4</p>
-          <p>Basho 5</p>
-          <p>Basho 6</p>
+          <h1>{{ new Date( basho.start_date ).getFullYear() }}</h1>
+          <p>Basho {{ new Date( basho.start_date ).toLocaleDateString()}}</p>
+          <p>Basho {{ new Date( basho.start_date ).toLocaleDateString() }}</p>
+          <p>Basho {{ new Date( basho.start_date ).toLocaleDateString() }}</p>
+          <p>Basho {{ new Date( basho.start_date ).toLocaleDateString() }}</p>
+          <p>Basho {{ new Date( basho.start_date ).toLocaleDateString() }}</p>
+          <p>Basho {{ new Date( basho.start_date ).toLocaleDateString() }}</p>
         </div>
     </template>
   </main>
