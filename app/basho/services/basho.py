@@ -1,4 +1,4 @@
-from app.basho.schemas.basho import CreateBashoSchema, UpdateBashoSchema
+from app.basho.schemas.basho import BashoSchema, CreateBashoSchema, UpdateBashoSchema
 from app.basho.exceptions.basho import BashoNotFoundException
 from app.basho.repository.basho import BashoRepository
 
@@ -18,7 +18,7 @@ class BashoService:
     async def update_basho(self, basho_id: str, schema: UpdateBashoSchema):
         raise NotImplementedError()
     
-    async def get_basho(self, basho_id: str):
+    async def get_basho(self, basho_id: str) -> BashoSchema:
         basho = self.repo.get_by_id(basho_id)
         if not basho:
             raise BashoNotFoundException
