@@ -148,9 +148,9 @@ def get_wins(df_matches: pd.DataFrame) -> pd.DataFrame:
 
 
 def mark_winner(df_matches: pd.DataFrame) -> pd.DataFrame:
-    df_matches["east_win?"] = (df_matches["winner_id"] == df_matches["east_id"]).astype(int)
-    df_matches["west_win?"] = (df_matches["winner_id"] == df_matches["west_id"]).astype(int)
+    df_matches["winner"] = (df_matches["winner_id"] == df_matches["east_id"]).astype(int) - (df_matches["winner_id"] == df_matches["west_id"]).astype(int)
     return df_matches
+
 
 
 def top_moves(df_matches: pd.DataFrame, top_amount: int) -> pd.DataFrame:
