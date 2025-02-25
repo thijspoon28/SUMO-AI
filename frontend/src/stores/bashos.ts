@@ -24,6 +24,8 @@ export const useBashoStore = defineStore('bashos', () => {
     let basho = bashos.value.find(b => b.id == bashoId);
 
     if (!basho) return undefined;
+    if (basho.matches.length > 0) return basho;
+    
     const result = await api.get<Basho>(`/bashos/${bashoId}`);
     
     basho = result;
