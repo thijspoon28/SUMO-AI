@@ -16,6 +16,10 @@ class Config:
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
 
+    DEFAULT_LIMIT: int = 50
+    MIN_LIMIT: int = 0
+    MAX_LIMIT: int = 1000
+
     DB_URL: str = "sqlite:///sumo.db"
     _db_dialect_and_driver = "mysql+mysqldb"
     # DB_URL: str = "{}://{}:{}@{}:{}/{}".format(

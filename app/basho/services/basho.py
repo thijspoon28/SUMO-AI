@@ -1,6 +1,8 @@
 from app.basho.schemas.basho import BashoSchema, CreateBashoSchema, UpdateBashoSchema
 from app.basho.exceptions.basho import BashoNotFoundException
 from app.basho.repositories.basho import BashoRepository
+from core.fastapi.dependencies.pagination import PaginationParams
+from core.schemas.pagination import Pagination
 
 
 class BashoService:
@@ -25,5 +27,14 @@ class BashoService:
         
         return basho
     
-    async def get_bashos(self):
-        return self.repo.get()
+    async def get_bashos(self, pagination: PaginationParams) -> Pagination[BashoSchema]:
+        bashos, total = self.repo.get_filtered(pagination)
+
+        response = Pagination[BashoSchema](
+            total=total,
+            skip=pagination.skip,
+            limit=pagination.limit,
+            records=bashos
+        )
+
+        return response

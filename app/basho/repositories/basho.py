@@ -1,10 +1,11 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 from core.db.models import Basho
-from core.repositories.base import Baserepositories
+from core.fastapi.dependencies.pagination import PaginationParams
+from core.repositories.base import BaseRepository
 
 
-class BashoRepository(Baserepositories):
+class BashoRepository(BaseRepository):
     def __init__(self, session: Session):
         super().__init__(Basho, session)
 
@@ -16,3 +17,20 @@ class BashoRepository(Baserepositories):
 
         result = self.session.execute(query)
         return result.scalars().first()
+
+    def get_filtered(
+        self,
+        pagination: PaginationParams,
+    ) -> tuple[list[Basho], int]:
+        query = select(Basho)
+        
+        total_query = select(func.count()).select_from(query.subquery())
+        total_result = self.session.execute(total_query)
+        total_count = total_result.scalar()
+
+        query = query.offset(pagination.skip).limit(pagination.limit)
+
+        query = self.query_options(query)
+        result = self.session.execute(query)
+        return result.scalars().all(), total_count
+

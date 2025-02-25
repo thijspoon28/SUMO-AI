@@ -18,6 +18,15 @@ class BashoSchema(BaseModel):
     date: str
     start_date: datetime
     end_date: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class FullBashoSchema(BaseModel):
+    id: str
+    date: str
+    start_date: datetime
+    end_date: datetime
     # rikishis: list
     matches: list[MatchSchema]
 

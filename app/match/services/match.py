@@ -1,51 +1,49 @@
-from app.match.schemas.match import CreateMatchSchema, UpdateMatchSchema
-from app.auth.services.utils import get_password_hash
-from app.match.exceptions.match import DuplicateMatchnameException, MatchNotFoundException
+from app.match.dependencies.match import MatchFilterParams
+from app.match.schemas.match import CreateMatchSchema, MatchSchema, UpdateMatchSchema
+from app.match.exceptions.match import MatchNotFoundException
 from app.match.repositories.match import MatchRepository
-from core.db.models import Match
+from core.fastapi.dependencies.pagination import PaginationParams
+from core.schemas.pagination import Pagination
 
 
 class MatchService:
     def __init__(self, session) -> None:
         self.repo = MatchRepository(session)
 
-    async def get_by_matchname(self, matchname):
-        return self.repo.get_by_matchname(matchname)
-
     async def create_match(self, schema: CreateMatchSchema):
-        match = self.repo.get_by_matchname(schema.matchname)
-
-        if match:
-            raise DuplicateMatchnameException
-
-        hashed_pass = get_password_hash(schema.password)
-        match = Match(matchname=schema.matchname, password=hashed_pass)
-        return self.repo.create(match)
+        raise NotImplementedError()
 
     async def delete_match(self, match_id: int) -> None:
-        match = self.repo.get_by_id(match_id)
-        if not match:
-            raise MatchNotFoundException
-        
-        self.repo.delete(match)
+        raise NotImplementedError()
 
     async def update_match(self, match_id: int, schema: UpdateMatchSchema):
-        match = self.repo.get_by_id(match_id)
+        raise NotImplementedError()
+
+    async def get_match(
+        self,
+        basho_id: str,
+        day: str,
+        east_id: int,
+        west_id: int,
+    ):
+        match = self.repo.get_by_ids(basho_id, day, east_id, west_id)
         if not match:
             raise MatchNotFoundException
-        
-        hashed_pass = get_password_hash(schema.password)
-        params = {"matchname": schema.matchname, "password": hashed_pass}
-        
-        self.repo.update_by_id(match_id, params)
-        return self.repo.get_by_id(match_id)
-    
-    async def get_match(self, match_id: int):
-        match = self.repo.get_by_id(match_id)
-        if not match:
-            raise MatchNotFoundException
-        
+
         return match
-    
-    async def get_matchs(self):
-        return self.repo.get()
+
+    async def get_matches(
+        self,
+        filters: MatchFilterParams,
+        pagination: PaginationParams,
+    ) -> Pagination[MatchSchema]:
+        matches, total = self.repo.get_filtered(filters, pagination)
+
+        response = Pagination[MatchSchema](
+            total=total,
+            skip=pagination.skip,
+            limit=pagination.limit,
+            records=matches
+        )
+
+        return response

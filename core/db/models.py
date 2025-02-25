@@ -80,7 +80,7 @@ class Match(Base):  # type: ignore
         return f"{self.basho_id}-{self.day}-{self.east_id}-{self.west_id}"
 
     def __repr__(self) -> str:
-        return f"Match({self.concat_id})"
+        return f"Match({self.concat_id()})"
 
 
 class Rikishi(Base):  # type: ignore
