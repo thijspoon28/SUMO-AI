@@ -19,7 +19,7 @@ class BashoSchema(BaseModel):
     start_date: datetime
     end_date: datetime
     # rikishis: list
-    # matches: list[MatchSchema]
+    matches: list[MatchSchema]
 
     model_config = ConfigDict(from_attributes=True)
 

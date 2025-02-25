@@ -5,15 +5,15 @@ import type { Basho } from '@/types'
 import { useBashoStore } from '@/stores/bashos'
 
 export default function useBasho() {
-  const bashos: Ref<Basho[]> = ref([]);
+  const basho: Ref<Basho | undefined> = ref();
   const loading: Ref<boolean> = ref(false);
   const error: Ref<AxiosError | null> = ref(null);
   const bashosStore = useBashoStore();
 
-  const fetchBashos = async () => {
+  const fetchBasho = async (bashoId: string) => {
     loading.value = true;
     try {
-      bashos.value = await bashosStore.getAll();
+      basho.value = await bashosStore.get(bashoId);
     } catch (err) {
       error.value = err as AxiosError;
     } finally {
@@ -21,5 +21,5 @@ export default function useBasho() {
     }
   };
 
-  return { bashos, loading, error, fetchBashos };
+  return { basho, loading, error, fetchBasho };
 }
