@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
-import BashoView from '../views/BashoView.vue';
+import BashosView from '../views/BashosView.vue';
 import YearView from '../views/YearView.vue'; 
+import BashoView from '@/views/BashoView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,19 +11,41 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-      meta: { breadcrumb: [{ name: 'Home', path: '/' }] },
+      meta: { breadcrumb: [
+        { name: 'Home', path: '/' }
+      ] },
     },
     {
-      path: '/basho',
-      name: 'basho',
-      component: BashoView,
-      meta: { breadcrumb: [{ name: 'Home', path: '/' }, { name: 'Basho', path: '/basho' }] },
+      path: '/bashos',
+      name: 'bashos',
+      component: BashosView,
+      meta: { breadcrumb: [
+        { name: 'Home', path: '/' }, 
+        { name: 'Bashos', path: '/bashos' }
+      ] },
     },
     {
-      path: '/basho/year',  // This is a sibling route to `/basho`, accessible from `/basho/year`
+      path: '/bashos/:year',  
       name: 'year',
       component: YearView,
-      meta: { breadcrumb: [{ name: 'Home', path: '/' }, { name: 'Basho', path: '/basho' }, { name: 'Year', path: '' }] },
+      meta: { breadcrumb: [
+        { name: 'Home', path: '/' }, 
+        { name: 'Bashos', path: '/bashos' }, 
+        { name: 'Year', path: '' }
+      ] },
+      props: true,
+    },
+    {
+      path: '/bashos/:year/:basho',  
+      name: 'basho',
+      component: BashoView,
+      meta: { breadcrumb: [
+        { name: 'Home', path: '/' }, 
+        { name: 'Bashos', path: '/bashos' }, 
+        { name: 'Year', path: '/bashos/:year' },
+        { name: 'basho', path: ''}
+      ] },
+      props: true,
     },
   ],
 });

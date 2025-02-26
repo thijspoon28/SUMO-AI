@@ -1,7 +1,7 @@
 <template>
     <nav class="wrapper">
       <RouterLink to="/">Home</RouterLink>
-      <RouterLink to="/basho">Basho</RouterLink>
+      <RouterLink to="/bashos">Basho</RouterLink>
       <RouterLink to="">Current basho</RouterLink>
     </nav>
 </template>

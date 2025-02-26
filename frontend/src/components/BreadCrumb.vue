@@ -22,10 +22,17 @@ interface Breadcrumb {
 
 const route = useRoute();
 
-// Properly type route.meta and provide a fallback value if it's undefined
 const breadcrumbs = computed<Breadcrumb[]>(() => {
-  // Fallback to an empty array if `route.meta.breadcrumb` is undefined or not set
-  return (route.meta.breadcrumb as Breadcrumb[]) || [];
+  // Get breadcrumbs from route metadata or fallback to an empty array
+  let crumbs = (route.meta.breadcrumb as Breadcrumb[]) || [];
+
+  // Replace the "Year" breadcrumb with the actual year from route params
+  return crumbs.map(crumb => {
+    if (crumb.name === 'Year' && route.params.year) {
+      return { ...crumb, name: route.params.year as string, path: `/bashos/${route.params.year}` };
+    }
+    return crumb;
+  });
 });
 </script>
 
