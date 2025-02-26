@@ -1,6 +1,7 @@
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
-from app.match.dependencies.match import MatchFilterParams
+from app.match.dependencies.filter import MatchFilterParams
+from app.match.dependencies.sorting import MatchSortingParams, SortField
 from core.db.models import Match
 from core.fastapi.dependencies.pagination import PaginationParams
 from core.repositories.base import BaseRepository
@@ -29,6 +30,7 @@ class MatchRepository(BaseRepository):
 
     def get_filtered(
         self,
+        sorting: MatchSortingParams,
         filters: MatchFilterParams,
         pagination: PaginationParams,
     ) -> list[Match]:
@@ -65,6 +67,17 @@ class MatchRepository(BaseRepository):
                     Match.west_rank.in_(filters.contains_rank),
                 )
             )
+        
+        sort_mapping = {
+            SortField.basho_id: Match.basho_id,            
+            SortField.day: Match.day,        
+            SortField.match_no: Match.match_no,        
+            SortField.east_id: Match.east_id,        
+            SortField.west_id: Match.west_id,            
+        }
+
+        sort_column = sort_mapping.get(sorting.sort_field, Match.basho_id)
+        query = query.order_by(sort_column.asc() if sorting.ascending else sort_column.desc())
 
         total_query = select(func.count()).select_from(query.subquery())
         total_result = self.session.execute(total_query)

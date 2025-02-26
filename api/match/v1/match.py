@@ -3,7 +3,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.match.dependencies.match import MatchFilterParams, get_match_filter_params
+from app.match.dependencies.filter import MatchFilterParams, get_match_filter_params
+from app.match.dependencies.sorting import MatchSortingParams, get_match_sorting_params
 from app.match.schemas.match import MatchSchema
 from app.match.services.match import MatchService
 from core.fastapi.dependencies.database import get_db
@@ -26,11 +27,12 @@ match_v1_router = APIRouter()
 )
 @version(1)
 async def get_matches(
+    sorting: MatchSortingParams = Depends(get_match_sorting_params),
     filters: MatchFilterParams = Depends(get_match_filter_params),
     pagination: PaginationParams = Depends(get_pagination_params),
     session: Session = Depends(get_db),
 ):
-    return await MatchService(session).get_matches(filters, pagination)
+    return await MatchService(session).get_matches(sorting, filters, pagination)
 
 
 @match_v1_router.get(

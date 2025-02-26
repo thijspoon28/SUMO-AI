@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.rikishi.dependencies.sorting import RikishiSortingParams, get_rikishi_sorting_params
 from app.rikishi.schemas.rikishi import FullRikishiSchema, RikishiSchema
 from app.rikishi.services.rikishi import RikishiService
 from core.fastapi.dependencies.database import get_db
@@ -25,10 +26,11 @@ rikishi_v1_router = APIRouter()
 )
 @version(1)
 async def get_rikishis(
+    sorting: RikishiSortingParams = Depends(get_rikishi_sorting_params),
     pagination: PaginationParams = Depends(get_pagination_params),
     session: Session = Depends(get_db),
 ):
-    return await RikishiService(session).get_rikishis(pagination)
+    return await RikishiService(session).get_rikishis(sorting, pagination)
 
 
 @rikishi_v1_router.get(

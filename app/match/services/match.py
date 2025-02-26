@@ -1,4 +1,5 @@
-from app.match.dependencies.match import MatchFilterParams
+from app.match.dependencies.filter import MatchFilterParams
+from app.match.dependencies.sorting import MatchSortingParams
 from app.match.schemas.match import CreateMatchSchema, MatchSchema, UpdateMatchSchema
 from app.match.exceptions.match import MatchNotFoundException
 from app.match.repositories.match import MatchRepository
@@ -34,10 +35,11 @@ class MatchService:
 
     async def get_matches(
         self,
+        sorting: MatchSortingParams,
         filters: MatchFilterParams,
         pagination: PaginationParams,
     ) -> Pagination[MatchSchema]:
-        matches, total = self.repo.get_filtered(filters, pagination)
+        matches, total = self.repo.get_filtered(sorting, filters, pagination)
 
         response = Pagination[MatchSchema](
             total=total,
