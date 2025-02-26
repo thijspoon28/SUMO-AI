@@ -1,30 +1,31 @@
 <template>
-    <nav aria-label="breadcrumb">
-      <ul class="breadcrumb">
-        <li v-for="(crumb, index) in breadcrumbs" :key="crumb.path">
-          <router-link v-if="index < breadcrumbs.length - 1" :to="crumb.path">
-            {{ crumb.name }}
-          </router-link>
-          <span v-else>{{ crumb.name }}</span>
-        </li>
-      </ul>
-    </nav>
-  </template>
-  
+  <nav aria-label="breadcrumb">
+    <ul class="breadcrumb">
+      <li v-for="(crumb, index) in breadcrumbs" :key="index">
+        <router-link v-if="crumb.path" :to="crumb.path">
+          {{ crumb.name }}
+        </router-link>
+        <span v-else>{{ crumb.name }}</span>
+      </li>
+    </ul>
+  </nav>
+</template>
+
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
+
+interface Breadcrumb {
+  name: string;
+  path?: string;  // `path` can be undefined for the last breadcrumb
+}
 
 const route = useRoute();
-const router = useRouter();
 
-// Compute breadcrumb paths
-const breadcrumbs = computed(() => {
-  const matchedRoutes = route.matched;
-  return matchedRoutes.map((r) => ({
-    name: r.name as string,
-    path: r.path,
-  }));
+// Properly type route.meta and provide a fallback value if it's undefined
+const breadcrumbs = computed<Breadcrumb[]>(() => {
+  // Fallback to an empty array if `route.meta.breadcrumb` is undefined or not set
+  return (route.meta.breadcrumb as Breadcrumb[]) || [];
 });
 </script>
 
@@ -42,7 +43,7 @@ const breadcrumbs = computed(() => {
 }
 
 .breadcrumb li:hover {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .breadcrumb li:not(:last-child)::after {

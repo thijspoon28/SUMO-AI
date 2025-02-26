@@ -2,9 +2,9 @@
   <main>
     <div class="container">
       <div v-for="year in sortedYears" :key="year">
-        <h2>{{ year }}</h2>
+        <RouterLink to="/basho/year">{{ year }}</RouterLink>
         <div v-for="(basho, index) in groupedBashos[year]" :key="index" class="year-box">
-          <p>Basho start_date: {{ formatDate(basho.start_date) }}</p>
+          <p>Basho start date: {{ formatDate(basho.start_date) }}</p>
         </div>
       </div>
     </div>

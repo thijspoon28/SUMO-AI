@@ -1,5 +1,7 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import HomeView from '../views/HomeView.vue';
+import BashoView from '../views/BashoView.vue';
+import YearView from '../views/YearView.vue'; 
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,24 +10,21 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+      meta: { breadcrumb: [{ name: 'Home', path: '/' }] },
     },
     {
       path: '/basho',
       name: 'basho',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/BashoView.vue'),
+      component: BashoView,
+      meta: { breadcrumb: [{ name: 'Home', path: '/' }, { name: 'Basho', path: '/basho' }] },
     },
     {
-      path: '/test',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/TestView.vue'),
+      path: '/basho/year',  // This is a sibling route to `/basho`, accessible from `/basho/year`
+      name: 'year',
+      component: YearView,
+      meta: { breadcrumb: [{ name: 'Home', path: '/' }, { name: 'Basho', path: '/basho' }, { name: 'Year', path: '' }] },
     },
   ],
-})
+});
 
-export default router
+export default router;
