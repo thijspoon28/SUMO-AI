@@ -1,36 +1,62 @@
 <template>
   <main>
-    <template class="container">     
-      <div v-for="(basho, index) in bashos" :key="index" class="year-box">
-        <h1>{{ new Date( basho.start_date ).getFullYear() }}</h1>
-        <p>Basho {{ new Date( basho.start_date ).toLocaleDateString() }}</p>
-        <p>Basho {{ new Date( basho.start_date ).toLocaleDateString() }}</p>
-        <p>Basho {{ new Date( basho.start_date ).toLocaleDateString() }}</p>
-        <p>Basho {{ new Date( basho.start_date ).toLocaleDateString() }}</p>
-        <p>Basho {{ new Date( basho.start_date ).toLocaleDateString() }}</p>
-        <p>Basho {{ new Date( basho.start_date ).toLocaleDateString() }}</p>
+    <div class="container">
+      <div v-for="year in sortedYears" :key="year">
+        <h2>{{ year }}</h2>
+        <div v-for="(basho, index) in groupedBashos[year]" :key="index" class="year-box">
+          <p>Basho start_date: {{ formatDate(basho.start_date) }}</p>
+        </div>
       </div>
-    </template>
+    </div>
+
     <div class="controls">
       <p v-if="loading">Loading...</p>
-      <p v-else-if="error"> {{ error.message }}</p>
+      <p v-else-if="error">{{ error.message }}</p>
       <div v-else>
         <p>Showing {{ bashos.length }} / {{ total }} bashos</p>
-        <button v-if="bashos.length != total" :onclick="appendNext">Load More</button>
+        <button v-if="bashos.length != total" @click="appendNext">Load More</button>
       </div>
     </div>
   </main>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import useBashos from '@/composables/useBashos';
+import { computed, onMounted } from "vue";
+import useBashos from "@/composables/useBashos";
+
 const { bashos, loading, error, appendNext, total } = useBashos();
 
 onMounted(() => {
-  appendNext()
-})
+  appendNext();
+});
+
+// Compute grouped bashos by year
+const groupedBashos = computed(() => {
+  const grouped: Record<string, typeof bashos.value> = {};
+  
+  // Sort bashos in descending order (newest first)
+  const sortedBashos = [...bashos.value].sort((a, b) => parseInt(b.date) - parseInt(a.date));
+
+  sortedBashos.forEach((basho) => {
+    const year = basho.date.substring(0, 4);
+    if (!grouped[year]) grouped[year] = [];
+    grouped[year].push(basho);
+  });
+
+  return grouped;
+});
+
+// Create a sorted list of years in descending order
+const sortedYears = computed(() => {
+  return Object.keys(groupedBashos.value).sort((a, b) => parseInt(b) - parseInt(a));
+});
+
+// Format date utility
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString();
+};
 </script>
+
 
 <style scoped>
 .container {
