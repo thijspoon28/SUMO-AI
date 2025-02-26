@@ -2,6 +2,7 @@ from datetime import datetime
 from pydantic import ConfigDict, BaseModel
 
 from app.match.schemas.match import MatchSchema
+from app.rikishi.schemas.rikishi import RikishiSchema
 
 
 class CreateBashoSchema(BaseModel):
@@ -27,7 +28,7 @@ class FullBashoSchema(BaseModel):
     date: str
     start_date: datetime
     end_date: datetime
-    # rikishis: list
+    rikishis: list[RikishiSchema]
     matches: list[MatchSchema]
 
     model_config = ConfigDict(from_attributes=True)

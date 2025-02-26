@@ -116,16 +116,19 @@ class Rikishi(Base):  # type: ignore
     yusho_count = Column(Integer, nullable=False)
     yusho_count_by_division = Column(JSON, nullable=False)
 
-    measurementHistory = relationship(Measurement, backref="rikishi")
-    rankHistory = relationship(Rank, backref="rikishi")
-    shikonaHistory = relationship(Shikona, backref="rikishi")
+    measurement_history: Mapped[list[Measurement]] = relationship(Measurement, backref="rikishi")
+    rank_history: Mapped[list[Rank]] = relationship(Rank, backref="rikishi")
+    shikona_history: Mapped[list[Shikona]] = relationship(Shikona, backref="rikishi")
 
-    bashos: Mapped["RikishiBasho"] = relationship(
+    bashos: Mapped[list["RikishiBasho"]] = relationship(
         back_populates="rikishi", cascade="all, delete"
     )
 
-    east_matches = relationship("Match", foreign_keys="[Match.east_id]", back_populates="east_rikishi")
-    west_matches = relationship("Match", foreign_keys="[Match.west_id]", back_populates="west_rikishi")
+    east_matches: Mapped[list[Match]] = relationship("Match", foreign_keys="[Match.east_id]", back_populates="east_rikishi")
+    west_matches: Mapped[list[Match]] = relationship("Match", foreign_keys="[Match.west_id]", back_populates="west_rikishi")
+
+    def matches(self) -> list[Match]:
+        return self.east_matches + self.west_matches
 
     def __repr__(self) -> str:
         return f"Rikishi({self.id})"
@@ -139,10 +142,10 @@ class Basho(Base):  # type: ignore
     start_date = Column(DateTime, nullable=False)
     end_date = Column(DateTime, nullable=False)
 
-    rikishis: Mapped["RikishiBasho"] = relationship(
+    rikishis: Mapped[list["RikishiBasho"]] = relationship(
         back_populates="basho", cascade="all, delete"
     )
-    matches = relationship(Match, back_populates="basho")
+    matches: Mapped[list[Match]] = relationship(Match, back_populates="basho")
 
 
 class RikishiBasho(Base):  # type: ignore

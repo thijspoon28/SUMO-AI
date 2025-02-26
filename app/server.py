@@ -45,8 +45,8 @@ def init_listeners(app_: FastAPI) -> None:
         return JSONResponse(
             status_code=500,
             content={
-                "Exception": f"{exc.__class__.__name__}{exc.args}",
-                "message": "This is not pretty is it..?",
+                "Exception": f"{exc.__class__.__name__}",
+                "message": f"{exc}",
             },
         )
 

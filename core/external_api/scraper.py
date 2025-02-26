@@ -36,7 +36,7 @@ def include(
             rank=r.rank,
         )
 
-        rikishi.rankHistory.append(model)
+        rikishi.rank_history.append(model)
 
     for m in measurements:
         model = Measurement(
@@ -46,7 +46,7 @@ def include(
             weight=m.weight,
         )
 
-        rikishi.measurementHistory.append(model)
+        rikishi.measurement_history.append(model)
 
     for s in shikonas:
         model = Shikona(
@@ -56,7 +56,7 @@ def include(
             shikona_jp=s.shikonaJp,
         )
 
-        rikishi.shikonaHistory.append(model)
+        rikishi.shikona_history.append(model)
 
     return rikishi
 

@@ -1,0 +1,41 @@
+import type { Match } from "./match";
+import type { Measurement } from "./measurement";
+import type { Rank } from "./rank";
+import type { RikishiBasho } from "./rikishiBasho";
+import type { Shikona } from "./shikona";
+
+export interface Rikishi {
+  sumodbId: number | null;
+  nskId: number;
+  shikonaEn: string;
+  shikonaJp: string | null;
+  currentRank: string;
+  heya: string | null;
+  birthDate: Date | null;
+  shusshin: string | null;
+  height: number;
+  weight: number;
+  debut: string;
+  intai: Date | null;
+  updatedAt: Date | null;
+  createdAt: Date | null;
+  absenceByDivision: Record<string, number>;
+  bashoCount: number;
+  bashoCountByDivision: Record<string, number>;
+  lossByDivision: Record<string, number>;
+  sansho: Record<string, number>;
+  totalAbsences: number;
+  totalByDivision: Record<string, number>;
+  totalLosses: number;
+  totalMatches: number;
+  totalWins: number;
+  winsByDivision: Record<string, number>;
+  yushoCount: number;
+  yushoCountByDivision: Record<string, number>;
+  measurementHistory: Measurement[];
+  rankHistory: Rank[];
+  shikonaHistory: Shikona[];
+  bashos: RikishiBasho[];
+  eastMatches: Match[];
+  westMatches: Match[];
+}
