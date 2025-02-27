@@ -31,6 +31,9 @@ const breadcrumbs = computed<Breadcrumb[]>(() => {
     if (crumb.name === 'Year' && route.params.year) {
       return { ...crumb, name: route.params.year as string, path: `/bashos/${route.params.year}` };
     }
+    if (crumb.name === 'basho' && route.params.basho) {
+      return { ...crumb, name: route.params.basho as string, path: `${route.params.basho}` };
+    }
     return crumb;
   });
 });
