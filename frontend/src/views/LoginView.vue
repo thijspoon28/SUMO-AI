@@ -77,10 +77,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 
 // Login Form data
 const username = ref('');
@@ -108,7 +109,8 @@ const login = async () => {
         
         await authStore.login(username.value, password.value);
         
-        router.push('/'); // Redirect to home after login
+        const redirectPath: string = route.query.redirect as string || '/'
+        router.push(redirectPath)
     } catch (err) {
         error.value = err instanceof Error 
             ? err.message 
@@ -136,7 +138,8 @@ const signUp = async () => {
         
         await authStore.signUp(signupUsername.value, signupPassword.value);
 
-        router.push('/login'); // Redirect to login after successful signup
+        const redirectPath: string = route.query.redirect as string || '/'
+        router.push(redirectPath)
     } catch (err) {
         signupError.value = err instanceof Error 
             ? err.message 
