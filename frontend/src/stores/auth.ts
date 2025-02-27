@@ -22,15 +22,26 @@ export const useAuthStore = defineStore('auth', () => {
         saveTokens(response.data.accessToken, response.data.refreshToken);
     }
 
+    async function signUp(username: string, password: string) {
+        const response = await rawApi.post('/users', { username, password });
+
+        if (response.status != 201) {
+            alert(response.data);
+            return
+        }
+
+        await login(username, password);
+    }
+
+    function logout() {
+        clearTokens();
+    }
+
     function getUserId() {
         if (!isAuthenticated()) return "NotFound";
         const decodedPayload = decodeToken(accessToken.value!);
 
         return decodedPayload.user_id;
-    }
-
-    function logout() {
-        clearTokens();
     }
 
     function isAuthenticated() {
@@ -121,5 +132,5 @@ export const useAuthStore = defineStore('auth', () => {
         return decodedPayload.exp < Math.floor(Date.now() / 1000);
     }
 
-    return { applyHeaders, saveTokens, clearTokens, refreshTokens, isAuthenticated, isAdmin, login, logout, getUserId };
+    return { applyHeaders, saveTokens, clearTokens, refreshTokens, isAuthenticated, isAdmin, login, signUp, logout, getUserId };
 });
