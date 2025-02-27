@@ -6,7 +6,7 @@
       <div v-if="bashosForYear.length > 0">
         <div v-for="(basho, index) in bashosForYear" :key="index" class="year-box">
           <RouterLink :to="{ name: 'basho', params: { year, basho: basho.id } }">
-              Basho start date: {{ formatDate(basho.start_date) }}
+              Basho start date: {{ formatDate(basho.startDate) }}
             </RouterLink>
         </div>
       </div>

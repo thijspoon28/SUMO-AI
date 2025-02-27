@@ -1,8 +1,9 @@
+import { API_BASE_URL } from "@/config";
 import axios from "axios";
 import { camelizeKeys, decamelizeKeys } from 'humps';
 
 const rawApi = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL
+    baseURL: API_BASE_URL
 });
 
 rawApi.interceptors.request.use(config => {

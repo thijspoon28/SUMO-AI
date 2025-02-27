@@ -1,0 +1,85 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/certs:/etc/nginx/certs
+      - ./frontend/dist:/usr/share/nginx/html:ro  # Mount the frontend build as read-only
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - sumo-ai
+
+  backend:
+    container_name: sumo-ai_backend
+    # env_file:
+    #   - backend/.env
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    environment:
+      - ENV=local
+      - JWT_SECRET_KEY=string
+      - HASH_ID_SALT=string
+      - HASH_ID_MIN_LENGTH=4
+    restart: always
+    command: bash -c "python main.py"
+    ports:
+      - 8000:8000
+    volumes:
+      - ./backend/sumo.db:/app/sumo.db
+    networks:
+      - sumo-ai
+  
+  # database:
+  #   container_name: sumo-ai_database
+  #   image: mysql:latest
+  #   env_file:
+  #     - backend/.env
+  #   ports:  
+  #     - 3306:3306
+  #   volumes:
+  #     - sumo-ai_database:/var/lib/mysql
+  #   networks:
+  #     - sumo-ai
+
+  # phpmyadmin:
+  #   container_name: sumo-ai_phpmyadmin
+  #   image: phpmyadmin
+  #   env_file:
+  #     - backend/.env
+  #   depends_on:
+  #     - database
+  #   ports:
+  #     - 8080:80
+  #   environment:
+  #     PMA_HOST: sumo-ai_database
+  #     PMA_PORT: 3306
+  #     # PMA_ABSOLUTE_URI: /phpmyadmin/
+  #   restart: always
+  #   networks:
+  #     - sumo-ai
+
+  # This is just a build step, not a long-running service
+  # frontend-build:
+  #   container_name: sumo-ai_frontend_build
+  #   build:
+  #     context: frontend
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./frontend/dist:/app/dist  # Share the built dist directory
+  #   command: npm run build-only
+  #   networks:
+  #     - sumo-ai
+
+networks:
+  sumo-ai:
+    driver: bridge
+
+volumes:
+  sumo-ai_database:

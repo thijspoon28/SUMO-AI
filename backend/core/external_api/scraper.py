@@ -9,7 +9,7 @@ from core.db.models import (
     RikishiBasho,
     Shikona,
 )
-from database.queries import Repo
+from core.db.queries import Repo
 from core.db import get_session
 from core.external_api.enums import Division
 from core.external_api.sumo import SumoAPI

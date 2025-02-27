@@ -24,7 +24,7 @@ const route = useRoute();
 
 const breadcrumbs = computed<Breadcrumb[]>(() => {
   // Get breadcrumbs from route metadata or fallback to an empty array
-  let crumbs = (route.meta.breadcrumb as Breadcrumb[]) || [];
+  const crumbs = (route.meta.breadcrumb as Breadcrumb[]) || [];
 
   // Replace the "Year" breadcrumb with the actual year from route params
   return crumbs.map(crumb => {

@@ -1,7 +1,4 @@
-
-
-
-from database.queries import DfQueries
+from core.db.queries import DfQueries
 from core.helpers.utils.columns import count_kimarite
 
 

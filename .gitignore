@@ -1,7 +1,7 @@
 # Custom
 .vscode/
 *.db
-*.bat
+# *.bat
 *.exp
 *.pdb
 *.dll
@@ -13,6 +13,10 @@ package-lock.json
 *.sqlite
 node_modules/
 build/
+nginx/certs/nginx.key
+nginx/certs/nginx.crt
+
+test.db
 
 
 # Byte-compiled / optimized / DLL files

@@ -5,7 +5,7 @@ import time
 from core.external_api.enums import Division
 from core.external_api.scraper import scramble_rikishi, scrape_all, scrape_basho
 from core.external_api.sumo import SumoAPI
-from database.queries import DfQueries
+from core.db.queries import DfQueries
 from core.helpers.utils.columns import add_winstreaks, count_kimarite, get_wins, rikishi_stats, top_moves
 from core.helpers.utils.estimate import estimate
 from core.helpers.utils.parsing import sumo_rank_to_value
