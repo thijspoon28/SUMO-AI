@@ -38,26 +38,23 @@ const loadBashosForYear = async () => {
   console.log("Starting data fetch...");
 
   // Wait until we reach the total or no more data is available
-  while (bashosForYear.value.length < total.value) {
+  while (bashos.value.length < total.value) {
     const currentLength = bashosForYear.value.length;
-    console.log(`Fetching more data... (${currentLength}/${total.value})`);
-
-    // If the current length hasn't changed, stop the loop (data is not increasing)
-    if (currentLength === bashosForYear.value.length && currentLength >= total.value) {
-      console.log("Stopping fetch loop: Data fully loaded or no more data to fetch.");
-      break;
-    }
+    console.log(`Fetching more data... (${currentLength}/6)`);
 
     // Fetch more data
     await appendNext();
 
     // Optional: If no new data is added, break the loop to prevent infinite fetch
     if (bashosForYear.value.length === 6) {
-      console.log("No new data fetched, stopping loop.");
+      console.log("All basho's fetched, stopping loop.");
       break;
     }
   }
-
+  if (bashos.value.length == total.value) {
+    console.log("Basho's not in the data set");
+  }
+  
   isLoading.value = false;
 };
 
