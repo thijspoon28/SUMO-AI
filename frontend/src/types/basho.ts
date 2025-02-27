@@ -6,6 +6,6 @@ export interface Basho {
     date: string;
     start_date: string;
     end_date: string;
-    rikishi: RikishiBasho[];
-    matches: Match[];
+    rikishi?: RikishiBasho[];
+    matches?: Match[];
 }
