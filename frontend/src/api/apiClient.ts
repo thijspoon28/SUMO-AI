@@ -1,8 +1,10 @@
 // apiClient.ts
+import { useAuthenticationStore } from '@/stores/authenticate';
 import axios from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 class ApiClient {
   private instance: AxiosInstance;
+  private auth!: ReturnType<typeof useAuthenticationStore>;
 
   constructor(baseURL: string, config?: AxiosRequestConfig) {
     this.instance = axios.create({
@@ -11,8 +13,8 @@ class ApiClient {
     });
 
     // Add interceptors for request/response handling if needed
-    this.instance.interceptors.request.use((config) => {
-      // e.g., Add auth token
+    this.instance.interceptors.request.use(async (config) => {
+      config = await this.auth.applyHeaders(config)
       return config;
     });
 
@@ -23,6 +25,10 @@ class ApiClient {
         return Promise.reject(error);
       }
     );
+  }
+
+  public setAuthenticationStore(store: ReturnType<typeof useAuthenticationStore>) {
+    this.auth = store;
   }
 
   public async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
