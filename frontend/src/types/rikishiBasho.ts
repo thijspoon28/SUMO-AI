@@ -1,5 +1,5 @@
-import { Basho } from "./basho";
-import { Rikishi } from "./rikishi";
+import { type Basho } from "./basho";
+import { type Rikishi } from "./rikishi";
 
 export interface RikishiBasho {
     rikishiId: number;
