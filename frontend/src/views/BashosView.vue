@@ -5,7 +5,7 @@
         <RouterLink :to="{ name: 'year', params: { year } }">{{ year }}</RouterLink>
         <div v-for="(basho, index) in groupedBashos[year]" :key="index" class="year-box">
           <RouterLink :to="{ name: 'basho', params: { year, basho: basho.id } }">
-            Basho start date: {{ formatDate(basho.start_date) }}
+            Basho start date: {{ formatDate(basho.startDate) }}
           </RouterLink>
         </div>
       </div>

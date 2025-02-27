@@ -1,11 +1,11 @@
 // api.ts
-import { useAuthenticationStore } from '@/stores/authenticate';
+import { useAuthStore } from '@/stores/auth';
 import ApiClient from './apiClient';
 
-const api = new ApiClient('http://localhost:8000/api/latest');
+const api = new ApiClient(import.meta.env.VITE_API_BASE_URL);
 
 export function initializeApiClient() {
-    api.setAuthenticationStore(useAuthenticationStore());
+    api.setAuthStore(useAuthStore());
 }
 
 export default api;

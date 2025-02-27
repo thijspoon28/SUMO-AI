@@ -31,7 +31,6 @@ export const useBashoStore = defineStore('bashos', () => {
   }
 
   async function getBatch(batchNumber: number) {
-    console.log(batchNumber, bashos.value._started)
     if (batchNumber < 1) throw new Error(`batchNumber must be higher than 0, got ${batchNumber}`);
 
     if (!bashos.value._started) {

@@ -17,6 +17,7 @@
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "humps": "^2.0.1",
     "lucide-vue-next": "^0.468.0",
     "pinia": "^2.2.6",
     "radix-vue": "^1.9.10",
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.0",
+    "@types/humps": "^2.0.6",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.9.3",
     "@vitejs/plugin-vue": "^5.2.1",
