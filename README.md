@@ -70,7 +70,7 @@ Follow these steps to set up SUMO-AI locally. 🚀
 2. **Start the Application**  
   Spin it up using Docker:  
   ```cmd
-  ./run.bat  
+  .\run.bat  
   ```
 
 ### **Local Backend Setup**  
@@ -84,21 +84,21 @@ First, make sure to setup the environment variables:
 4. Create a virtual environment:  
   *Use python 3.12+.*
   ```cmd
-  cd ./backend/
+  cd .\backend\
 
   py -m venv venv
 
-  ./venv/Scripts/activate
+  .\venv\Scripts\activate
   ```
 
 5. Install requirements:
   ```cmd
-  pip install -r ./requirements.txt
+  pip install -r .\requirements.txt
   ```
 
 6. Run the Backend:
   ```cmd
-  python ./main.py
+  python .\main.py
   ```
 
 ---
@@ -110,7 +110,7 @@ First, make sure to setup the environment variables:
 
 1. Navigate to the `frontend` folder:  
   ```cmd
-  cd frontend  
+  cd .\frontend\  
   ```
 
 2. Install dependencies:
