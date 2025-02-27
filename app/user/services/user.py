@@ -50,7 +50,7 @@ class UserService:
     async def get_users(self):
         return self.repo.get()
     
-    async def is_admin(self, user_id):
+    async def is_admin(self, user_id: int):
         user = self.repo.get_by_id(user_id)
         if not user:
             raise UserNotFoundException

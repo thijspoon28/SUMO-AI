@@ -32,10 +32,10 @@ export interface Rikishi {
   winsByDivision: Record<string, number>;
   yushoCount: number;
   yushoCountByDivision: Record<string, number>;
-  measurementHistory: Measurement[];
-  rankHistory: Rank[];
-  shikonaHistory: Shikona[];
-  bashos: RikishiBasho[];
-  eastMatches: Match[];
-  westMatches: Match[];
+  measurementHistory?: Measurement[];
+  rankHistory?: Rank[];
+  shikonaHistory?: Shikona[];
+  bashos?: RikishiBasho[];
+  eastMatches?: Match[];
+  westMatches?: Match[];
 }

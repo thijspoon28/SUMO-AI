@@ -1,10 +1,11 @@
 // apiClient.ts
-import { useAuthenticationStore } from '@/stores/authenticate';
+import { useAuthStore } from '@/stores/auth';
 import axios from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { camelizeKeys, decamelizeKeys } from 'humps';
 class ApiClient {
   private instance: AxiosInstance;
-  private auth!: ReturnType<typeof useAuthenticationStore>;
+  private auth!: ReturnType<typeof useAuthStore>;
 
   constructor(baseURL: string, config?: AxiosRequestConfig) {
     this.instance = axios.create({
@@ -14,12 +15,22 @@ class ApiClient {
 
     // Add interceptors for request/response handling if needed
     this.instance.interceptors.request.use(async (config) => {
+      if (config.data) {
+        config.data = decamelizeKeys(config.data);
+      }
+
       config = await this.auth.applyHeaders(config)
       return config;
     });
 
     this.instance.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        if (response.data) {
+          response.data = camelizeKeys(response.data);
+        }
+
+        return response
+      },
       (error) => {
         // Handle errors globally
         return Promise.reject(error);
@@ -27,7 +38,7 @@ class ApiClient {
     );
   }
 
-  public setAuthenticationStore(store: ReturnType<typeof useAuthenticationStore>) {
+  public setAuthStore(store: ReturnType<typeof useAuthStore>) {
     this.auth = store;
   }
 

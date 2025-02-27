@@ -31,7 +31,6 @@ export const useBashoStore = defineStore('bashos', () => {
   }
 
   async function getBatch(batchNumber: number) {
-    console.log(batchNumber, bashos.value._started)
     if (batchNumber < 1) throw new Error(`batchNumber must be higher than 0, got ${batchNumber}`);
 
     if (!bashos.value._started) {
@@ -59,7 +58,7 @@ export const useBashoStore = defineStore('bashos', () => {
   async function get(bashoId: string) {
     let basho = bashos.value.records.find(b => b.id == bashoId);
     
-    if (basho && basho.matches && basho.matches.length > 0) return basho;
+    if (basho && basho.matches != undefined) return basho;
 
     const result = await api.get<Basho>(`/bashos/${bashoId}`);
 
