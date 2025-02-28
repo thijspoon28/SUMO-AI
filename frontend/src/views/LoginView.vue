@@ -353,6 +353,7 @@ onMounted(() => {
   left: 0;
   opacity: 0;
   visibility: hidden;
+  padding-top: 1.5rem;
   transform: translateX(-20px);
   transition: opacity 0.5s ease, transform 0.5s ease, visibility 0.5s;
   backface-visibility: hidden;
@@ -395,6 +396,7 @@ h2 {
   font-weight: 700;
   margin-bottom: 0.5rem;
   background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
