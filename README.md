@@ -25,16 +25,10 @@ Show us some love with a ⭐ if you like what we’re building—this is our pas
 ## 🛠️ How to Run SUMO-AI
 
 Follow these steps to set up SUMO-AI locally. 🚀  
-
-1. **Generate Certificates**  
-  Use this command (requires GIT installed):  
-  *Used in a Bash terminal.*
-  ```bash
-  "C:\Program Files\Git\usr\bin\openssl.exe" req -x509 -newkey rsa:4096 -keyout nginx/certs/nginx.key -out nginx/certs/nginx.crt -days 365 -nodes  
-  ```
   
-2. **Start the Application**  
-  Spin it up using Docker:  
+1. **Start the Application**  
+  Spin it up:  
+  *Will create new certificates if they are not present.*
   ```cmd
   .\run.bat  
   ```
