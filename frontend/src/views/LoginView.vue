@@ -132,7 +132,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -220,11 +220,6 @@ const signUp = async () => {
     isSigningUp.value = false;
   }
 };
-
-onMounted(() => {
-  switchMode()
-  setTimeout(() => switchMode(), 100)
-})
 </script>
 
 <style>

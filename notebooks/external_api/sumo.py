@@ -2,8 +2,8 @@ from typing import Any, Type, TypeVar, get_args, get_origin, overload
 from pydantic import BaseModel
 import requests  # type: ignore
 
-from core.external_api.enums import Division, SortFields
-from core.external_api.response_schemas import (
+from external_api.enums import Division, SortFields
+from external_api.response_schemas import (
     BaseResponse,
     BashoBanzukeResponse,
     BashoResponse,

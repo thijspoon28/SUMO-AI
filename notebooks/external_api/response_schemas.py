@@ -1,7 +1,7 @@
 from typing import Generic, TypeVar
 from pydantic import BaseModel
 
-from core.external_api.schemas import (
+from external_api.schemas import (
     BashoBanzuke,
     BashoData,
     BashoTorikumi,

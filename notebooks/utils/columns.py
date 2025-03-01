@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd  # type: ignore
 
-from core.db import get_session
-from core.db.models import Rikishi
-from core.external_api.scraper import scramble_rikishi
-from core.helpers.utils.estimate import estimate
-from core.helpers.utils.parsing import kimarite_to_value
+from utils.queries import get_session
+from utils.models import Rikishi
+from external_api.scraper import scramble_rikishi
+from utils.estimate import estimate
+from utils.parsing import kimarite_to_value
 
 
 def count_kimarite(df_rikishi: pd.DataFrame, df_matches: pd.DataFrame) -> pd.DataFrame:
@@ -148,9 +148,9 @@ def get_wins(df_matches: pd.DataFrame) -> pd.DataFrame:
 
 
 def mark_winner(df_matches: pd.DataFrame) -> pd.DataFrame:
-    df_matches["winner"] = (df_matches["winner_id"] == df_matches["east_id"]).astype(int) - (df_matches["winner_id"] == df_matches["west_id"]).astype(int)
+    # df_matches["winner"] = (df_matches["winner_id"] == df_matches["east_id"]).astype(int) - (df_matches["winner_id"] == df_matches["west_id"]).astype(int)
+    df_matches["east_win"] = (df_matches["winner_id"] == df_matches["east_id"]).astype(int)
     return df_matches
-
 
 
 def top_moves(df_matches: pd.DataFrame, top_amount: int) -> pd.DataFrame:

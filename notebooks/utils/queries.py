@@ -1,8 +1,37 @@
-from sqlalchemy import or_, select, text
-from sqlalchemy.orm import aliased, Session
-from core.db.models import Basho, Match, Rikishi, RikishiBasho
-from core.db import get_session
+import os
+from sqlalchemy import or_, select, text, create_engine
+import sqlalchemy
+from sqlalchemy.orm import aliased, Session, sessionmaker
+from utils.models import Base, Basho, Match, Rikishi, RikishiBasho
 import pandas as pd  # type: ignore
+
+
+def get_engine():
+    return create_engine("sqlite:///sumo.db", echo=False)
+
+
+def get_session():
+    engine = get_engine()
+    Session = sessionmaker(bind=engine)
+    return Session()
+
+
+def init_db(delete: bool = False):
+    session = get_session()
+
+    if delete:
+        os.remove("sumo.db")
+        Base.metadata.create_all(session.get_bind())
+        return
+        
+    q = text("SELECT * FROM Rikishi")
+
+    try:
+        session.execute(q)
+
+    except sqlalchemy.exc.OperationalError:
+        Base.metadata.create_all(session.get_bind())
+
 
 
 class Repo:

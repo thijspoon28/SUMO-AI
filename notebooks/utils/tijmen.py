@@ -2,14 +2,14 @@ import random
 import sys
 import time
 
-from core.external_api.enums import Division
-from core.external_api.scraper import scramble_rikishi, scrape_all, scrape_basho
-from core.external_api.sumo import SumoAPI
-from core.db.queries import DfQueries
-from core.helpers.utils.columns import add_winstreaks, count_kimarite, get_wins, rikishi_stats, top_moves
-from core.helpers.utils.estimate import estimate
-from core.helpers.utils.parsing import sumo_rank_to_value
-import core.external_api.schemas as schema
+from external_api.enums import Division
+from external_api.scraper import scramble_rikishi, scrape_all, scrape_basho
+from external_api.sumo import SumoAPI
+from utils.queries import DfQueries
+from utils.columns import add_winstreaks, count_kimarite, get_wins, rikishi_stats, top_moves
+from utils.estimate import estimate
+from utils.parsing import sumo_rank_to_value
+import external_api.schemas as schema
 
 
 def tijmens_tests() -> None:

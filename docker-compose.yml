@@ -32,7 +32,7 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - ./backend/sumo.db:/app/sumo.db
+      - ./notebooks/sumo.db:/app/sumo.db
     networks:
       - sumo-ai
   

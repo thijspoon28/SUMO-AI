@@ -23,7 +23,7 @@ def sumo_rank_to_value(rankString: str | None = None, **kwargs) -> int:
         return rank_order[rank] * 100 + int(num)
 
     except Exception as exc:
-        print(rankString, exc)
+        # print(rankString, exc)
         return 9999
 
 

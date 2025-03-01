@@ -5,9 +5,9 @@ import click
 from core.config import config
 
 from core.db import init_db  # noqa: E402
-from core.helpers.utils.estimate import manager  # noqa: E402
-from core.helpers.utils.tijmen import tijmens_tests  # noqa: E402
-from core.helpers.utils.thijs import thijs_tests  # noqa: E402
+# from core.helpers.utils.estimate import manager  # noqa: E402
+# from core.helpers.utils.tijmen import tijmens_tests  # noqa: E402
+# from core.helpers.utils.thijs import thijs_tests  # noqa: E402
 
 
 @click.command()
@@ -22,12 +22,12 @@ def main(tijmen: bool = False):
 
     if tijmen or app == "TIJMEN":
         init_db(delete=False)
-        tijmens_tests()
+        # tijmens_tests()
         return
 
     if app == "THIJS":
         init_db(delete=False)
-        thijs_tests()
+        # thijs_tests()
         return
     
     uvicorn.run(
@@ -40,7 +40,7 @@ def main(tijmen: bool = False):
 
 
 if __name__ == "__main__":
-    try:
+    # try:
         main()
-    except Exception as exc:
-        manager.handle_exc(exc)
+    # except Exception as exc:
+    #     manager.handle_exc(exc)
