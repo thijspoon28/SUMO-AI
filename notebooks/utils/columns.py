@@ -1,5 +1,14 @@
 import numpy as np
 import pandas as pd  # type: ignore
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+
+from utils import columns
+from utils.queries import DfQueries
+
+
 
 from utils.queries import get_session
 from utils.models import Rikishi
@@ -394,3 +403,93 @@ def count_moves(df_matches: pd.DataFrame) -> pd.DataFrame:
             data.append({"Rikishi_ID": rikishi_id, "Move_Type": kimarite, "Win_Count": wins, "Loss_Count": losses})
 
     return pd.DataFrame(data)
+
+def fightertype(df_matches: pd.DataFrame) -> pd.DataFrame:
+    df = columns.count_moves(df_matches)
+
+    # Pivot the data to get a wide format with separate columns for Wins and Losses for each move
+    pivot_wins = df.pivot_table(index='Rikishi_ID', columns='Move_Type', values='Win_Count', aggfunc='sum', fill_value=0)
+    pivot_losses = df.pivot_table(index='Rikishi_ID', columns='Move_Type', values='Loss_Count', aggfunc='sum', fill_value=0)
+
+    # Rename the columns to include 'Wins' and 'Losses' for clarity
+    pivot_wins.columns = [f'{col}_Wins' for col in pivot_wins.columns]
+    pivot_losses.columns = [f'{col}_Losses' for col in pivot_losses.columns]
+
+    # Combine the wins and losses data
+    final_df = pd.concat([pivot_wins, pivot_losses], axis=1)
+
+    # Reset the index to make 'Rikishi_ID' a regular column
+    final_df.reset_index(inplace=True)
+
+    # change back
+    df = final_df
+
+
+    # Normalize the data
+    scaler = StandardScaler()
+    X = df.drop(columns=['Rikishi_ID'])
+    X_scaled = scaler.fit_transform(X)
+
+
+    # Apply K-Means clustering
+    kmeans = KMeans(n_clusters=4, random_state=0)
+    df['Cluster'] = kmeans.fit_predict(X_scaled)
+
+    # Calculate the mean win/loss counts for each cluster
+    cluster_summary = final_df.groupby('Cluster').mean()
+
+
+    # Function to assign a fighter type to each rikishi based on their win counts and cluster-wise win averages
+    def assign_fighter_type(cluster_row, cluster_avg_wins):
+        # Select only columns related to win counts (excluding 'Rikishi_ID' and 'Cluster')
+        win_columns = [col for col in cluster_row.index if 'Wins' in col]
+
+        # Find the move with the highest win count for this individual rikishi
+        max_move = cluster_row[win_columns].idxmax()
+
+        # Compare the rikishi's highest move win count to the cluster's average win count
+        if cluster_row[max_move] > cluster_avg_wins[max_move]:
+            return f'{max_move.split("_")[0]} Specialist'  # Extract the move name (e.g., 'Oshidashi', 'Shiko')
+        else:
+            return 'Balanced Fighter'
+
+    # Function to classify all rikishi within each cluster
+    def classify_rikishi_by_cluster(final_df):
+        # Create a new column 'Fighter_Type' to store the fighter type for each rikishi
+        final_df['Fighter_Type'] = None
+
+        # Loop through each cluster
+        for cluster in final_df['Cluster'].unique():
+            # Subset the data for the current cluster
+            cluster_data = final_df[final_df['Cluster'] == cluster]
+
+            # Calculate the average win counts for each move in this cluster
+            cluster_avg_wins = cluster_data[[col for col in cluster_data.columns if 'Wins' in col]].mean()
+
+            # Apply the fighter type classification to each rikishi in this cluster
+            for idx, row in cluster_data.iterrows():
+                final_df.loc[idx, 'Fighter_Type'] = assign_fighter_type(row, cluster_avg_wins)
+
+        return final_df
+
+    # Apply the function to classify all rikishi in final_df based on their clusters
+    final_df = classify_rikishi_by_cluster(final_df)
+
+    # Display the final DataFrame with fighter types
+    print(final_df[['Rikishi_ID', 'Cluster', 'Fighter_Type']])
+
+    # Count how many rikishi are in each cluster
+    cluster_counts = final_df['Cluster'].value_counts().reset_index(name='Rikishi_Count')
+
+    # Rename the columns for clarity
+    cluster_counts.columns = ['Cluster', 'Rikishi_Count']
+
+    # Assuming 'df_matches' contains a 'Rikishi_ID' column
+    # And 'final_df' contains 'Rikishi_ID' and 'Cluster'
+
+
+    # HIER MOET NOG IETS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # Merge 'df_matches' with 'final_df' on 'Rikishi_ID' to add the 'Cluster' column
+    # df_matches = pd.merge(df_matches, final_df[['Rikishi_ID', 'Cluster']], on='Rikishi_ID', how='left')
+
+    return df_matches
