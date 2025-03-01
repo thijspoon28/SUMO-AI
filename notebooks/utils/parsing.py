@@ -22,60 +22,51 @@ def sumo_rank_to_value(rankString: str | None = None, **kwargs) -> int:
 
         return rank_order[rank] * 100 + int(num)
 
-    except Exception as exc:
+    except Exception:
         # print(rankString, exc)
         return 9999
 
 
-def next_basho_id(basho_id: str) -> str:
+def modify_basho_date(basho_date: tuple[str, int], basho_steps: int = 0, day_steps: int = 0) -> tuple[str, int]:
+    basho_id, day = basho_date
     year = int(basho_id[:4])
     month = int(basho_id[4:])
 
-    month += 2
+    d_positive = 1 if day_steps >= 0 else -1
 
-    if month > 12:
-        month = 1
-        year += 1
+    extra_steps = (day_steps // (15 * d_positive)) * d_positive
+    day_steps = day_steps % (15 * d_positive)
 
-    return f"{year}{month:0>{2}}"
+    basho_steps += extra_steps
 
-
-def prev_basho_id(basho_id: str) -> str:
-    year = int(basho_id[:4])
-    month = int(basho_id[4:])
-
-    month -= 2
-
-    if month < 0:
-        month = 11
-        year -= 1
-
-    return f"{year}{month:0>{2}}"
-
-
-def next_basho_date(basho_date: tuple[str, int]) -> tuple[str, int]:
-    basho_id = basho_date[0]
-    day = basho_date[1]
-
-    day += 1
+    day += day_steps
 
     if day > 15:
-        day = 1
-        basho_id = next_basho_id(basho_id)
+        day -= 15
+        basho_steps += 1
+    elif day < 1:
+        day += 15
+        basho_steps -= 1
 
-    return basho_id, day
+    b_positive = 1 if basho_steps >= 0 else -1
 
+    extra_steps = (basho_steps // (6 * b_positive)) * b_positive
+    basho_steps = basho_steps % (6 * b_positive)
 
-def prev_basho_date(basho_date: tuple[str, int]) -> tuple[str, int]:
-    basho_id = basho_date[0]
-    day = basho_date[1]
+    year += extra_steps
+    basho_steps *= 2
 
-    day -= 1
+    month += basho_steps
 
-    if day < 1:
-        day = 15
-        basho_id = prev_basho_id(basho_id)
+    if month > 11:
+        month -= 12
+        year += 1
+    elif month < 1:
+        month += 12
+        year -= 1
 
+    basho_id = f"{year}{month:0>{2}}"
+    
     return basho_id, day
 
 
