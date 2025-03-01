@@ -355,3 +355,42 @@ def rikishi_stats(df_matches: pd.DataFrame, fix_missing: bool = False) -> pd.Dat
     df_matches["west_height"] = west_heights
 
     return df_matches
+
+
+def count_moves(df_matches: pd.DataFrame) -> pd.DataFrame:
+    win_moves: dict[int, dict[str, int]] = {}
+    loss_moves: dict[int, dict[str, int]] = {}
+
+    for _, match in df_matches.iterrows():
+        east = match["east_id"]
+        west = match["west_id"]
+        east_win = match["winner_id"] == east
+        kimarite = match["kimarite"]
+        
+        winner, loser = (east, west) if east_win else (west, east)
+
+        win_moves.setdefault(winner, {}).setdefault(kimarite, 0)
+        win_moves[winner][kimarite] += 1
+
+        loss_moves.setdefault(loser, {}).setdefault(kimarite, 0)
+        loss_moves[loser][kimarite] += 1
+
+    # Transform into a structured format for the DataFrame
+    data = []
+    unique_ids = set(win_moves.keys()).union(set(loss_moves.keys()))
+    all_kimarites: set[str] = set()
+
+    for rikishi_id in unique_ids:
+        all_kimarites = all_kimarites.union(set(win_moves.get(rikishi_id, {}).keys())).union(set(loss_moves.get(rikishi_id, {}).keys()))
+
+    print(len(unique_ids))
+    print(len(all_kimarites))
+    print(len(unique_ids) * len(all_kimarites))
+        
+    for rikishi_id in unique_ids:
+        for kimarite in all_kimarites:
+            wins = win_moves.get(rikishi_id, {}).get(kimarite, 0)
+            losses = loss_moves.get(rikishi_id, {}).get(kimarite, 0)
+            data.append({"Rikishi_ID": rikishi_id, "Move_Type": kimarite, "Win_Count": wins, "Loss_Count": losses})
+
+    return pd.DataFrame(data)

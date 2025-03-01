@@ -1,7 +1,7 @@
-from utils.parsing import modify_basho_date
+my_dict = {}
 
+a = "a"
+b = "b"
+my_dict[a][b] = my_dict.setdefault(a, {}).get(b, 0) + 1
 
-basho_date = ("202303", 14)
-
-basho_date = modify_basho_date(basho_date, -16, -13)
-print(basho_date)
+print(my_dict)
