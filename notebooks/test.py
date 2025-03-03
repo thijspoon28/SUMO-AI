@@ -1,7 +1,10 @@
-my_dict = {}
+from utils import columns
+from utils.queries import DfQueries
 
-a = "a"
-b = "b"
-my_dict[a][b] = my_dict.setdefault(a, {}).get(b, 0) + 1
 
-print(my_dict)
+df_matches = DfQueries().matches()
+
+
+df_matches = columns.fightertype(df_matches)
+print(df_matches)
+print(df_matches.columns)
